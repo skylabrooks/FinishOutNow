@@ -7,6 +7,7 @@ import Dashboard from './components/Dashboard';
 import AnalysisModal from './components/AnalysisModal';
 import SettingsModal from './components/SettingsModal';
 import DiagnosticPanel from './components/DiagnosticPanel';
+import PermitMap from './components/PermitMap';
 import { LayoutDashboard, Map as MapIcon, FileText, Settings, Search, Loader2, Sparkles, AlertTriangle, ArrowUpDown, Calendar, DollarSign, Hammer, FileCheck, Shield, Monitor, PenTool, Download, PlayCircle, Zap, RefreshCw, Radio, User, CheckCircle } from 'lucide-react';
 
 // Default Profile for Demo
@@ -378,20 +379,7 @@ const App: React.FC = () => {
             <div className="lg:col-span-3">
                 
                 {viewMode === 'map' ? (
-                    <div className="bg-slate-900 border border-slate-800 rounded-xl h-[600px] flex flex-col items-center justify-center relative overflow-hidden group">
-                        {/* Placeholder Map UI */}
-                        <div className="absolute inset-0 opacity-20 bg-[url('https://api.mapbox.com/styles/v1/mapbox/dark-v10/static/-96.7970,32.7767,10,0/800x600?access_token=PLACEHOLDER')] bg-cover bg-center"></div>
-                        <div className="absolute inset-0 bg-gradient-to-t from-slate-900 to-transparent"></div>
-                        
-                        <MapIcon size={64} className="text-slate-700 mb-4" />
-                        <h3 className="text-xl font-bold text-white mb-2">Interactive Map Module</h3>
-                        <p className="text-slate-400 text-center max-w-md">
-                            Geospatial visualization is enabled. Connect a Leaflet or Google Maps API key in the next phase to plot {filteredPermits.length} leads across the DFW metroplex.
-                        </p>
-                        <button onClick={() => setViewMode('list')} className="mt-6 px-6 py-2 bg-slate-800 hover:bg-slate-700 border border-slate-700 rounded-lg text-white text-sm font-medium transition-all">
-                            Return to Feed
-                        </button>
-                    </div>
+                    <PermitMap permits={filteredPermits} onSelect={(p) => { if (p.aiAnalysis) setSelectedPermit(p); else alert('Select a lead to run AI analysis or click the card to view details.'); }} />
                 ) : (
                     <div className="space-y-4">
                         {filteredPermits.length === 0 ? (
