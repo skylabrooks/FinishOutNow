@@ -24,7 +24,10 @@ function FitBounds({ points }: { points: [number, number][] }) {
 
   useEffect(() => {
     if (!map) return;
-    if (!points || points.length === 0) return;
+    if (!points || points.length === 0) {
+      map.setView(DEFAULT_CENTER, 10);
+      return;
+    }
     const latLngs = points.map(p => L.latLng(p[0], p[1]));
     const bounds = L.latLngBounds(latLngs);
     map.fitBounds(bounds.pad(0.25));
@@ -50,7 +53,8 @@ const categoryColor = (category?: string) => {
 export default function PermitMap({ permits, onSelect }: Props) {
   const [coordsMap, setCoordsMap] = useState<Record<string, [number, number]>>(() => {
     try {
-      return JSON.parse(localStorage.getItem('finishoutnow_geocache_v1') || '{}');
+      if (typeof window === 'undefined') return {};
+      return JSON.parse(window.localStorage.getItem('finishoutnow_geocache_v1') || '{}');
     } catch {
       return {};
     }
@@ -133,7 +137,7 @@ export default function PermitMap({ permits, onSelect }: Props) {
 
   return (
     <div className="h-[600px] rounded-xl overflow-hidden border border-slate-800">
-      <MapContainer center={DEFAULT_CENTER} zoom={10} style={{ height: '100%', width: '100%' }}>
+      <MapContainer key={`map-${markerPoints.length}`} center={DEFAULT_CENTER} zoom={10} style={{ height: '100%', width: '100%' }}>
         <TileLayer
           attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
           url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"

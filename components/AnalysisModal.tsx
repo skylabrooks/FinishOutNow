@@ -1,17 +1,86 @@
 
 import React from 'react';
-import { X, CheckCircle, AlertCircle, DollarSign, Zap, Hammer, FileCheck, Building, User, Info, Shield, Monitor, PenTool, MapPin, BadgeCheck, HelpCircle } from 'lucide-react';
-import { EnrichedPermit, LeadCategory } from '../types';
+import { X, CheckCircle, AlertCircle, DollarSign, Zap, Hammer, FileCheck, Building, User, Info, Shield, Monitor, PenTool, MapPin, BadgeCheck, HelpCircle, Mail, Calendar } from 'lucide-react';
+import { EnrichedPermit, LeadCategory, CompanyProfile } from '../types';
 
 interface AnalysisModalProps {
   permit: EnrichedPermit | null;
   onClose: () => void;
+  companyProfile?: CompanyProfile;
 }
 
-const AnalysisModal: React.FC<AnalysisModalProps> = ({ permit, onClose }) => {
+const AnalysisModal: React.FC<AnalysisModalProps> = ({ permit, onClose, companyProfile }) => {
   if (!permit || !permit.aiAnalysis) return null;
 
   const { aiAnalysis, enrichmentData } = permit;
+
+  // Generate mailto link for cold outreach
+  const generateEmailLink = () => {
+    const recipientEmail = enrichmentData?.verified ? 'info@company.com' : 'contact@example.com'; // In real app, use enriched contact
+    const subject = `${companyProfile?.name || 'Partnership Opportunity'} - ${permit.address}`;
+    
+    const body = `Hello,
+
+${aiAnalysis.salesPitch}
+
+We noticed your ${permit.permitType.toLowerCase()} project at ${permit.address} in ${permit.city}. ${companyProfile?.valueProp || 'We specialize in commercial build-outs and would love to discuss how we can support your project.'}
+
+Project Details:
+• Address: ${permit.address}, ${permit.city}
+• Permit Type: ${permit.permitType}
+• Applied: ${permit.appliedDate}
+• Project Value: $${permit.valuation.toLocaleString()}
+
+I'd love to schedule a brief call to discuss how we can add value to this project.
+
+Best regards,
+${companyProfile?.contactName || 'Your Name'}
+${companyProfile?.name || 'Your Company'}
+${companyProfile?.phone || ''}
+${companyProfile?.email || ''}
+${companyProfile?.website || ''}`;
+
+    return `mailto:${recipientEmail}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+  };
+
+  // Generate .ics file for calendar export
+  const exportToCalendar = () => {
+    const startDate = new Date(permit.appliedDate);
+    const endDate = new Date(startDate.getTime() + 60 * 60 * 1000); // 1 hour later
+    
+    const formatDate = (date: Date) => {
+      return date.toISOString().replace(/[-:]/g, '').split('.')[0] + 'Z';
+    };
+
+    const icsContent = [
+      'BEGIN:VCALENDAR',
+      'VERSION:2.0',
+      'PRODID:-//FinishOutNow//Lead Tracking//EN',
+      'CALSCALE:GREGORIAN',
+      'BEGIN:VEVENT',
+      `UID:${permit.id}@finishoutnow.app`,
+      `DTSTAMP:${formatDate(new Date())}`,
+      `DTSTART:${formatDate(startDate)}`,
+      `DTEND:${formatDate(endDate)}`,
+      `SUMMARY:Follow up: ${aiAnalysis.extractedEntities.tenantName || permit.applicant}`,
+      `DESCRIPTION:Commercial lead opportunity\\n\\n${aiAnalysis.salesPitch}\\n\\nProject: ${permit.description}\\nValue: $${permit.valuation.toLocaleString()}\\nConfidence: ${aiAnalysis.confidenceScore}%`,
+      `LOCATION:${permit.address}, ${permit.city}`,
+      'STATUS:CONFIRMED',
+      'SEQUENCE:0',
+      `CATEGORIES:${aiAnalysis.category},Commercial Lead`,
+      'END:VEVENT',
+      'END:VCALENDAR'
+    ].join('\r\n');
+
+    const blob = new Blob([icsContent], { type: 'text/calendar;charset=utf-8' });
+    const link = document.createElement('a');
+    link.href = URL.createObjectURL(blob);
+    link.download = `lead-${permit.permitNumber}-${permit.appliedDate}.ics`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(link.href);
+  };
 
   const getCategoryColor = (cat: LeadCategory) => {
     switch (cat) {
@@ -198,10 +267,22 @@ const AnalysisModal: React.FC<AnalysisModalProps> = ({ permit, onClose }) => {
                         {aiAnalysis.urgency} Priority
                     </span>
                 </div>
-                <button className="w-full bg-blue-600 hover:bg-blue-500 text-white py-3 rounded-lg font-bold transition-all hover:shadow-lg hover:shadow-blue-900/30 flex items-center justify-center gap-2">
-                    <CheckCircle size={18} />
-                    Claim & Contact
-                </button>
+                <div className="space-y-2">
+                  <button
+                      onClick={() => window.location.href = generateEmailLink()}
+                      className="w-full bg-blue-600 hover:bg-blue-500 text-white py-3 rounded-lg font-bold transition-all hover:shadow-lg hover:shadow-blue-900/30 flex items-center justify-center gap-2"
+                  >
+                      <Mail size={18} />
+                      Claim & Contact
+                  </button>
+                  <button
+                      onClick={exportToCalendar}
+                      className="w-full bg-slate-700 hover:bg-slate-600 text-slate-200 py-2.5 rounded-lg font-medium transition-all flex items-center justify-center gap-2"
+                  >
+                      <Calendar size={16} />
+                      Add to Calendar
+                  </button>
+                </div>
             </div>
           </div>
 

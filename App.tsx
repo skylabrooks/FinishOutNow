@@ -8,6 +8,7 @@ import AnalysisModal from './components/AnalysisModal';
 import SettingsModal from './components/SettingsModal';
 import DiagnosticPanel from './components/DiagnosticPanel';
 import PermitMap from './components/PermitMap';
+import { ErrorBoundary } from './components/ErrorBoundary';
 import { LayoutDashboard, Map as MapIcon, FileText, Settings, Search, Loader2, Sparkles, AlertTriangle, ArrowUpDown, Calendar, DollarSign, Hammer, FileCheck, Shield, Monitor, PenTool, Download, PlayCircle, Zap, RefreshCw, Radio, User, CheckCircle } from 'lucide-react';
 
 // Default Profile for Demo
@@ -170,20 +171,28 @@ const App: React.FC = () => {
   };
 
   const handleDownloadCSV = () => {
-    const headers = ["ID", "City", "Date", "Permit Type", "Valuation", "Tenant Name", "Category", "Confidence", "Sales Pitch", "Verified Entity"];
-    const rows = permits
-        .filter(p => p.aiAnalysis?.isCommercialTrigger) // Only high value
+    const headers = ["ID", "City", "Date Applied", "Permit Type", "Description", "Address", "Valuation", "Applicant", "Tenant Name", "Category", "Is Commercial", "Confidence %", "Urgency", "Est. Opportunity Value", "Sales Pitch", "Verified Entity", "Entity Name", "Taxpayer ID", "Mailing Address"];
+    const rows = filteredPermits
         .map(p => [
             p.id,
             p.city,
             p.appliedDate,
             p.permitType,
+            p.description.substring(0, 100), // Truncate for readability
+            p.address,
             p.valuation,
-            p.aiAnalysis?.extractedEntities.tenantName || "Unknown",
+            p.applicant,
+            p.aiAnalysis?.extractedEntities.tenantName || "N/A",
             p.aiAnalysis?.category || "Uncategorized",
+            p.aiAnalysis?.isCommercialTrigger ? "Yes" : "No",
             p.aiAnalysis?.confidenceScore || 0,
-            `"${p.aiAnalysis?.salesPitch?.replace(/"/g, '""')}"`, // Escape quotes
-            p.enrichmentData?.verified ? "Yes" : "No"
+            p.aiAnalysis?.urgency || "Unknown",
+            p.aiAnalysis?.estimatedOpportunityValue || 0,
+            `"${p.aiAnalysis?.salesPitch?.replace(/"/g, '""') || ''}"`, // Escape quotes
+            p.enrichmentData?.verified ? "Yes" : "No",
+            p.enrichmentData?.taxpayerName || "N/A",
+            p.enrichmentData?.taxpayerNumber || "N/A",
+            `"${p.enrichmentData?.officialMailingAddress?.replace(/"/g, '""') || 'N/A'}"` // Escape quotes
         ]);
 
     const csvContent = "data:text/csv;charset=utf-8," 
@@ -379,7 +388,15 @@ const App: React.FC = () => {
             <div className="lg:col-span-3">
                 
                 {viewMode === 'map' ? (
-                    <PermitMap permits={filteredPermits} onSelect={(p) => { if (p.aiAnalysis) setSelectedPermit(p); else alert('Select a lead to run AI analysis or click the card to view details.'); }} />
+                    <ErrorBoundary fallback={
+                      <div className="text-center py-20 bg-slate-900/50 rounded-xl border border-slate-800 border-dashed">
+                        <AlertTriangle className="mx-auto text-red-400 mb-4" size={48} />
+                        <h3 className="text-lg font-medium text-slate-300">Map Unavailable</h3>
+                        <p className="text-slate-500">The map encountered an error. Try the list view instead.</p>
+                      </div>
+                    }>
+                      <PermitMap permits={filteredPermits} onSelect={(p) => { if (p.aiAnalysis) setSelectedPermit(p); else alert('Select a lead to run AI analysis or click the card to view details.'); }} />
+                    </ErrorBoundary>
                 ) : (
                     <div className="space-y-4">
                         {filteredPermits.length === 0 ? (
@@ -514,7 +531,8 @@ const App: React.FC = () => {
 
       <AnalysisModal 
         permit={selectedPermit} 
-        onClose={() => setSelectedPermit(null)} 
+        onClose={() => setSelectedPermit(null)}
+        companyProfile={companyProfile}
       />
 
       <SettingsModal 

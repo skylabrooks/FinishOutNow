@@ -1,10 +1,6 @@
 
 import { Permit } from '../../types';
 
-// Fort Worth Open Data Endpoint
-// ID: qy5k-jz7m
-const FW_API_ENDPOINT = 'https://data.fortworthtexas.gov/resource/qy5k-jz7m.json';
-
 interface FWRawPermit {
   record_id: string;
   permit_type: string;
@@ -16,22 +12,47 @@ interface FWRawPermit {
   status: string;
 }
 
+interface FWProxyResponse {
+  success: boolean;
+  data?: FWRawPermit[];
+  error?: string;
+  cached?: boolean;
+}
+
+// Use API proxy endpoint (resolves CORS issues)
+// Falls back to direct API if proxy is unavailable
+const PROXY_ENDPOINT = '/api/permits-fortworth';
+const DIRECT_ENDPOINT = 'https://data.fortworthtexas.gov/resource/qy5k-jz7m.json';
+
 export const fetchFortWorthPermits = async (): Promise<Permit[]> => {
   try {
-    // SoQL Query for Fort Worth
-    const query = [
-      '$where=(permit_type like \'%Commercial%\' OR permit_type like \'%Remodel%\') AND status != \'Withdrawn\'',
-      '$order=status_date DESC',
-      '$limit=20'
-    ].join('&');
+    // Try proxy first (production-ready)
+    let response = await fetch(`${PROXY_ENDPOINT}?limit=20`).catch(() => null);
+    let data: FWRawPermit[] = [];
 
-    const response = await fetch(`${FW_API_ENDPOINT}?${query}`);
+    if (response?.ok) {
+      const proxyData: FWProxyResponse = await response.json();
+      if (proxyData.success && proxyData.data) {
+        data = proxyData.data;
+        console.log(`[Fort Worth] Fetched ${data.length} permits via proxy (${proxyData.cached ? 'cached' : 'fresh'})`);
+      }
+    } else {
+      // Fallback to direct API (development/bypass)
+      console.warn('[Fort Worth] Proxy unavailable, trying direct API...');
+      const query = [
+        '$where=(permit_type like \'%Commercial%\' OR permit_type like \'%Remodel%\') AND status != \'Withdrawn\'',
+        '$order=status_date DESC',
+        '$limit=20'
+      ].join('&');
 
-    if (!response.ok) {
-      throw new Error(`Fort Worth API Error: ${response.statusText}`);
+      response = await fetch(`${DIRECT_ENDPOINT}?${query}`);
+
+      if (!response.ok) {
+        throw new Error(`Fort Worth API Error: ${response.statusText}`);
+      }
+
+      data = await response.json();
     }
-
-    const data: FWRawPermit[] = await response.json();
 
     return data.map(record => ({
       id: `FW-${record.record_id}`,
@@ -51,4 +72,3 @@ export const fetchFortWorthPermits = async (): Promise<Permit[]> => {
     console.warn('Failed to fetch Fort Worth permits:', error);
     return [];
   }
-};

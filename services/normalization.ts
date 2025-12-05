@@ -56,13 +56,13 @@ export const normalizePermitType = (rawType: string, description: string = ''): 
  * Ensures formatting for city names.
  */
 export const normalizeCity = (city: string): Permit['city'] => {
-  const c = city.trim();
-  if (c.match(/Dallas/i)) return 'Dallas';
-  if (c.match(/Fort Worth/i)) return 'Fort Worth';
-  if (c.match(/Plano/i)) return 'Plano';
-  if (c.match(/Frisco/i)) return 'Frisco';
-  if (c.match(/Irving/i)) return 'Irving';
-  if (c.match(/Arlington/i)) return 'Arlington';
+  const c = city.trim().toLowerCase();
+  if (c.includes('fort') || c.includes('fw') || c.includes('ft.') || c.includes('ft ')) return 'Fort Worth';
+  if (c.includes('dallas')) return 'Dallas';
+  if (c.includes('plano')) return 'Plano';
+  if (c.includes('frisco')) return 'Frisco';
+  if (c.includes('irving')) return 'Irving';
+  if (c.includes('arlington')) return 'Arlington';
   
   return 'Dallas'; // Default fallback if unknown, or handle as error
 };
