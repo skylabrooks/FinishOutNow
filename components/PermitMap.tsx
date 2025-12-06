@@ -136,7 +136,7 @@ export default function PermitMap({ permits, onSelect }: Props) {
   const markerPoints = points.filter(pt => !!pt.latlng);
 
   return (
-    <div className="h-[600px] rounded-xl overflow-hidden border border-slate-800">
+    <div className="h-[600px] rounded-xl overflow-hidden border border-slate-800 relative z-0">
       <MapContainer key={`map-${markerPoints.length}`} center={DEFAULT_CENTER} zoom={10} style={{ height: '100%', width: '100%' }}>
         <TileLayer
           attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'

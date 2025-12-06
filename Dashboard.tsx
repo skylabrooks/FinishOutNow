@@ -59,8 +59,8 @@ const Dashboard: React.FC<DashboardProps> = ({ stats }) => {
       </div>
 
       <div className="bg-slate-800 border border-slate-700 p-4 rounded-xl shadow-sm md:col-span-1">
-        <div className="h-24">
-            <ResponsiveContainer width="100%" height="100%">
+        <div className="h-24 min-h-24">
+            <ResponsiveContainer width="100%" height={96} minHeight={0}>
             <BarChart data={data}>
                 <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#334155" />
                 <XAxis dataKey="name" hide />

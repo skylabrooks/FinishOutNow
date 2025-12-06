@@ -8,7 +8,11 @@ import AnalysisModal from './components/AnalysisModal';
 import SettingsModal from './components/SettingsModal';
 import DiagnosticPanel from './components/DiagnosticPanel';
 import PermitMap from './components/PermitMap';
+import LeadClaimModal from './components/LeadClaimModal';
+import PermitCardWithVisibility from './components/PermitCardWithVisibility';
+import ScoringAnalytics from './components/ScoringAnalytics';
 import { ErrorBoundary } from './components/ErrorBoundary';
+import { AuthProvider, useAuth } from './services/AuthContext';
 import { LayoutDashboard, Map as MapIcon, FileText, Settings, Search, Loader2, Sparkles, AlertTriangle, ArrowUpDown, Calendar, DollarSign, Hammer, FileCheck, Shield, Monitor, PenTool, Download, PlayCircle, Zap, RefreshCw, Radio, User, CheckCircle } from 'lucide-react';
 
 // Default Profile for Demo
@@ -25,7 +29,7 @@ const DEFAULT_PROFILE: CompanyProfile = {
 const STORAGE_KEY_PERMITS = 'finishOutNow_permits_v1';
 const STORAGE_KEY_PROFILE = 'finishOutNow_profile_v1';
 
-const App: React.FC = () => {
+const AppContent: React.FC = () => {
   // Persistence: Load from LocalStorage or Fallback to Mock
   const [permits, setPermits] = useState<EnrichedPermit[]>(() => {
     try {
@@ -47,11 +51,13 @@ const App: React.FC = () => {
   });
 
   const [selectedPermit, setSelectedPermit] = useState<EnrichedPermit | null>(null);
+  const [showClaimModal, setShowClaimModal] = useState(false);
+  const [selectedLeadForClaim, setSelectedLeadForClaim] = useState<EnrichedPermit | null>(null);
   const [filterCity, setFilterCity] = useState<string>('All');
   const [loadingIds, setLoadingIds] = useState<Set<string>>(new Set());
   const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   const [isDiagnosticsOpen, setIsDiagnosticsOpen] = useState(false);
-  const [viewMode, setViewMode] = useState<'list' | 'map'>('list');
+  const [viewMode, setViewMode] = useState<'list' | 'map' | 'analytics'>('list');
   const [isBatchScanning, setIsBatchScanning] = useState(false);
   const [isRefreshing, setIsRefreshing] = useState(false);
   
@@ -80,6 +86,19 @@ const App: React.FC = () => {
     localStorage.setItem(STORAGE_KEY_PROFILE, JSON.stringify(companyProfile));
   }, [companyProfile]);
 
+  // Handle ESC key to close map view when no modal is open
+  // This uses bubble phase (default) so modal's capture phase handler runs first
+  useEffect(() => {
+    const handleEsc = (e: KeyboardEvent) => {
+      // Only close map if ESC wasn't handled by modal (check if default was prevented)
+      if (e.key === 'Escape' && !e.defaultPrevented && viewMode === 'map' && !selectedPermit && !isSettingsOpen && !isDiagnosticsOpen) {
+        setViewMode('list');
+      }
+    };
+    window.addEventListener('keydown', handleEsc);
+    return () => window.removeEventListener('keydown', handleEsc);
+  }, [viewMode, selectedPermit, isSettingsOpen, isDiagnosticsOpen]);
+
   const refreshLeads = async () => {
       setIsRefreshing(true);
       try {
@@ -94,7 +113,7 @@ const App: React.FC = () => {
           const merged = freshLeads.map(newLead => {
               const existing = analyzedMap.get(newLead.id);
               if (existing) {
-                  return { ...newLead, aiAnalysis: existing.aiAnalysis, enrichmentData: existing.enrichmentData };
+                  return { ...newLead, aiAnalysis: (existing as any).aiAnalysis, enrichmentData: (existing as any).enrichmentData };
               }
               return newLead;
           });
@@ -105,6 +124,18 @@ const App: React.FC = () => {
       } finally {
           setIsRefreshing(false);
       }
+  };
+
+  const handleClaimLead = (permit: EnrichedPermit) => {
+    setSelectedLeadForClaim(permit);
+    setShowClaimModal(true);
+  };
+
+  const handleLeadClaimed = async () => {
+    // Refresh the permit to update claim status
+    if (selectedLeadForClaim) {
+      setPermits(permits.map(p => p.id === selectedLeadForClaim.id ? selectedLeadForClaim : p));
+    }
   };
 
   const handleAnalyze = async (id: string, e?: React.MouseEvent) => {
@@ -357,6 +388,13 @@ const App: React.FC = () => {
                     <MapIcon size={18} />
                     <span className="font-medium">Map View</span>
                 </button>
+                <button 
+                    onClick={() => setViewMode('analytics')}
+                    className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all ${viewMode === 'analytics' ? 'bg-blue-600 text-white shadow-lg shadow-blue-900/20' : 'text-slate-400 hover:bg-slate-800/50'}`}
+                >
+                    <Zap size={18} />
+                    <span className="font-medium">Analytics</span>
+                </button>
                 
                 <div className="mt-8 px-4">
                     <h3 className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-4">Sort By</h3>
@@ -384,11 +422,14 @@ const App: React.FC = () => {
                 </div>
             </div>
 
-            {/* List / Map View */}
-            <div className="lg:col-span-3">
+            {/* List / Map / Analytics View */}
+            <div className="lg:col-span-3 relative z-0">
                 
-                {viewMode === 'map' ? (
-                    <ErrorBoundary fallback={
+                {viewMode === 'analytics' ? (
+                    <ScoringAnalytics permits={filteredPermits} />
+                ) : viewMode === 'map' ? (
+                                        <div className="relative z-0">
+                                            <ErrorBoundary fallback={
                       <div className="text-center py-20 bg-slate-900/50 rounded-xl border border-slate-800 border-dashed">
                         <AlertTriangle className="mx-auto text-red-400 mb-4" size={48} />
                         <h3 className="text-lg font-medium text-slate-300">Map Unavailable</h3>
@@ -397,6 +438,7 @@ const App: React.FC = () => {
                     }>
                       <PermitMap permits={filteredPermits} onSelect={(p) => { if (p.aiAnalysis) setSelectedPermit(p); else alert('Select a lead to run AI analysis or click the card to view details.'); }} />
                     </ErrorBoundary>
+                                    </div>
                 ) : (
                     <div className="space-y-4">
                         {filteredPermits.length === 0 ? (
@@ -407,120 +449,14 @@ const App: React.FC = () => {
                             </div>
                         ) : (
                             filteredPermits.map(permit => (
-                                <div 
-                                    key={permit.id} 
-                                    id={`permit-card-${permit.id}`}
-                                    onClick={() => permit.aiAnalysis && setSelectedPermit(permit)}
-                                    className={`group bg-slate-900 border transition-all duration-300 rounded-xl overflow-hidden relative
-                                        ${permit.aiAnalysis?.isCommercialTrigger 
-                                            ? 'border-emerald-500/30 hover:border-emerald-500/60 shadow-lg shadow-emerald-900/10' 
-                                            : 'border-slate-800 hover:border-slate-700 hover:shadow-xl'
-                                        }
-                                        ${permit.aiAnalysis ? 'cursor-pointer' : ''}
-                                    `}
-                                >
-                                    {/* Verification Status Stripe */}
-                                    {permit.enrichmentData?.verified && (
-                                        <div className="absolute top-0 right-0 left-0 h-1 bg-gradient-to-r from-emerald-500 to-emerald-700"></div>
-                                    )}
-
-                                    <div className="p-5 flex flex-col md:flex-row gap-6">
-                                        {/* Left: Metadata */}
-                                        <div className="flex-1">
-                                            <div className="flex items-center gap-2 mb-2">
-                                                <span className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider
-                                                    ${permit.permitType === 'Certificate of Occupancy' ? 'bg-purple-500/20 text-purple-400 border border-purple-500/30' : 'bg-blue-500/20 text-blue-400 border border-blue-500/30'}
-                                                `}>
-                                                    {permit.permitType}
-                                                </span>
-                                                {permit.dataSource && (
-                                                   <span className="text-[10px] text-slate-600 border border-slate-800 px-1 rounded bg-slate-900">
-                                                       {permit.dataSource}
-                                                   </span>
-                                                )}
-                                                <span className="text-slate-500 text-xs flex items-center gap-1">
-                                                    <Calendar size={12} /> {permit.appliedDate}
-                                                </span>
-                                                <span className="text-slate-500 text-xs flex items-center gap-1">
-                                                    • {permit.city}
-                                                </span>
-                                            </div>
-                                            
-                                            <h3 className="text-lg font-bold text-white mb-1 group-hover:text-blue-400 transition-colors">
-                                                {permit.description.length > 80 ? permit.description.substring(0, 80) + '...' : permit.description}
-                                            </h3>
-                                            <p className="text-slate-400 text-sm flex items-center gap-1">
-                                                <span className="w-1.5 h-1.5 rounded-full bg-slate-600"></span>
-                                                {permit.address}
-                                            </p>
-                                            
-                                            <div className="mt-4 flex items-center gap-4 text-xs">
-                                                <div className="flex items-center gap-1.5 text-slate-300 bg-slate-800/50 px-2 py-1 rounded">
-                                                    <DollarSign size={12} className="text-emerald-400" />
-                                                    {permit.valuation.toLocaleString()}
-                                                </div>
-                                                <div className="flex items-center gap-1.5 text-slate-300 bg-slate-800/50 px-2 py-1 rounded">
-                                                    <User size={12} className="text-blue-400" />
-                                                    {permit.applicant}
-                                                </div>
-                                            </div>
-                                        </div>
-
-                                        {/* Right: AI Intel or Action */}
-                                        <div className="w-full md:w-64 border-t md:border-t-0 md:border-l border-slate-800 pt-4 md:pt-0 md:pl-6 flex flex-col justify-center">
-                                            {permit.aiAnalysis ? (
-                                                <div className="space-y-3">
-                                                    <div className="flex items-center justify-between">
-                                                        <span className="text-xs text-slate-500 font-semibold uppercase">Confidence</span>
-                                                        <span className={`text-lg font-bold ${
-                                                            permit.aiAnalysis.confidenceScore > 80 ? 'text-emerald-400' : 
-                                                            permit.aiAnalysis.confidenceScore > 50 ? 'text-yellow-400' : 'text-slate-400'
-                                                        }`}>
-                                                            {permit.aiAnalysis.confidenceScore}%
-                                                        </span>
-                                                    </div>
-                                                    
-                                                    {/* Category Badge */}
-                                                    <div className="flex items-center gap-2">
-                                                        {permit.aiAnalysis.category === LeadCategory.SECURITY && <Shield size={14} className="text-red-400" />}
-                                                        {permit.aiAnalysis.category === LeadCategory.LOW_VOLTAGE && <Monitor size={14} className="text-cyan-400" />}
-                                                        {permit.aiAnalysis.category === LeadCategory.SIGNAGE && <PenTool size={14} className="text-amber-400" />}
-                                                        <span className="text-sm font-medium text-white">{permit.aiAnalysis.category}</span>
-                                                    </div>
-
-                                                    {/* Verification Badge */}
-                                                    {permit.enrichmentData?.verified && (
-                                                        <div className="flex items-center gap-1.5 text-[10px] text-emerald-400 bg-emerald-900/20 px-2 py-1 rounded border border-emerald-900/50 w-fit">
-                                                            <CheckCircle size={10} /> Verified Entity
-                                                        </div>
-                                                    )}
-
-                                                    <button className="w-full mt-2 text-xs font-medium text-blue-400 hover:text-blue-300 flex items-center justify-center gap-1">
-                                                        View Analysis <PlayCircle size={12} />
-                                                    </button>
-                                                </div>
-                                            ) : (
-                                                <div className="h-full flex items-center justify-center">
-                                                    <button 
-                                                        onClick={(e) => handleAnalyze(permit.id, e)}
-                                                        disabled={loadingIds.has(permit.id)}
-                                                        className="w-full bg-slate-800 hover:bg-blue-600 hover:text-white border border-slate-700 text-slate-400 px-4 py-3 rounded-lg text-sm font-semibold transition-all flex items-center justify-center gap-2 group/btn"
-                                                    >
-                                                        {loadingIds.has(permit.id) ? (
-                                                            <>
-                                                                <Loader2 size={16} className="animate-spin" /> Analyzing...
-                                                            </>
-                                                        ) : (
-                                                            <>
-                                                                <Sparkles size={16} className="text-blue-500 group-hover/btn:text-white transition-colors" /> Run AI Analysis
-                                                            </>
-                                                        )}
-                                                    </button>
-                                                </div>
-                                            )}
-                                        </div>
-                                    </div>
-                                </div>
+                                <PermitCardWithVisibility
+                                    key={permit.id}
+                                    permit={permit}
+                                    onSelectPermit={() => permit.aiAnalysis && setSelectedPermit(permit)}
+                                    onClaimLead={() => handleClaimLead(permit)}
+                                    onAnalyze={() => handleAnalyze(permit.id)}
+                                    isAnalyzing={loadingIds.has(permit.id)}
+                                />
                             ))
                         )}
                     </div>
@@ -534,6 +470,17 @@ const App: React.FC = () => {
         onClose={() => setSelectedPermit(null)}
         companyProfile={companyProfile}
       />
+
+      {showClaimModal && selectedLeadForClaim && (
+        <LeadClaimModal
+          permit={selectedLeadForClaim}
+          businessName={companyProfile.name}
+          userEmail="user@example.com"
+          businessId="demo-business"
+          onClaimed={handleLeadClaimed}
+          onClose={() => setShowClaimModal(false)}
+        />
+      )}
 
       <SettingsModal 
         isOpen={isSettingsOpen} 
@@ -551,6 +498,17 @@ const App: React.FC = () => {
       )}
 
     </div>
+  );
+};
+
+// Wrap app with Firebase Auth provider
+const App: React.FC = () => {
+  return (
+    <ErrorBoundary>
+      <AuthProvider>
+        <AppContent />
+      </AuthProvider>
+    </ErrorBoundary>
   );
 };
 

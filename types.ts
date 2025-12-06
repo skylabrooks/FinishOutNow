@@ -75,3 +75,23 @@ export interface CompanyProfile {
   website: string;
   valueProp: string;
 }
+
+export interface LeadClaim {
+  id: string;
+  leadId: string;
+  businessId: string;
+  businessName: string;
+  claimedAt: string;
+  claimedBy: string;
+  paymentStatus: 'pending' | 'paid' | 'free';
+  expiresAt?: string;
+  notes?: string;
+}
+
+export interface LeadVisibility {
+  leadId: string;
+  isClaimed: boolean;
+  claimedBy?: string;
+  hiddenFields: ('applicant' | 'address' | 'valuation' | 'description')[];
+  visibleFields: ('permitType' | 'city' | 'status' | 'appliedDate' | 'applicant' | 'address' | 'valuation' | 'description')[];
+}

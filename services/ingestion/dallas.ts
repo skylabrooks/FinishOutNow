@@ -39,13 +39,12 @@ export const fetchDallasPermits = async (): Promise<Permit[]> => {
     } else {
       // Fallback to direct API (development/bypass)
       console.warn('[Dallas] Proxy unavailable, trying direct API...');
-      const query = [
-        '$where=(permit_type like \'Commercial\' OR permit_type = \'Certificate of Occupancy\') AND valuation > 1000',
-        '$order=issue_date DESC',
-        '$limit=20'
-      ].join('&');
+      const params = new URLSearchParams({
+        '$limit': '20',
+        '$order': 'issue_date DESC'
+      });
 
-      response = await fetch(`${DIRECT_ENDPOINT}?${query}`);
+      response = await fetch(`${DIRECT_ENDPOINT}?${params.toString()}`);
       
       if (!response.ok) {
         throw new Error(`Dallas API Error: ${response.statusText}`);
@@ -55,14 +54,14 @@ export const fetchDallasPermits = async (): Promise<Permit[]> => {
     }
 
     return data.map(record => ({
-      id: `DAL-${record.permit_no}`,
-      permitNumber: record.permit_no,
-      permitType: record.permit_type.includes('Occupancy') ? 'Certificate of Occupancy' : 'Commercial Remodel',
-      address: record.address.toUpperCase(),
+      id: `DAL-${record.permit_no || Math.random()}`,
+      permitNumber: record.permit_no || 'N/A',
+      permitType: (record.permit_type || '').includes('Occupancy') ? 'Certificate of Occupancy' : 'Commercial Remodel',
+      address: (record.address || 'Address Not Listed').toUpperCase(),
       city: 'Dallas',
       appliedDate: record.issue_date ? record.issue_date.split('T')[0] : new Date().toISOString().split('T')[0],
-      description: record.work_description || `Commercial work at ${record.address}`,
-      applicant: record.applicant_name || 'Unknown Applicant',
+      description: record.work_description || `Commercial work at ${record.address || 'location'}`,
+      applicant: (record.applicant_name && record.applicant_name !== 'null' && record.applicant_name.trim()) ? record.applicant_name.trim() : 'Unknown Applicant',
       valuation: parseFloat(record.valuation) || 0,
       status: 'Issued',
       dataSource: 'Dallas Open Data'
@@ -72,3 +71,4 @@ export const fetchDallasPermits = async (): Promise<Permit[]> => {
     console.warn('Failed to fetch Dallas permits:', error);
     return [];
   }
+};

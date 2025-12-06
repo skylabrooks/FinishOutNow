@@ -39,13 +39,12 @@ export const fetchFortWorthPermits = async (): Promise<Permit[]> => {
     } else {
       // Fallback to direct API (development/bypass)
       console.warn('[Fort Worth] Proxy unavailable, trying direct API...');
-      const query = [
-        '$where=(permit_type like \'%Commercial%\' OR permit_type like \'%Remodel%\') AND status != \'Withdrawn\'',
-        '$order=status_date DESC',
-        '$limit=20'
-      ].join('&');
+      const params = new URLSearchParams({
+        '$limit': '20',
+        '$order': 'status_date DESC'
+      });
 
-      response = await fetch(`${DIRECT_ENDPOINT}?${query}`);
+      response = await fetch(`${DIRECT_ENDPOINT}?${params.toString()}`);
 
       if (!response.ok) {
         throw new Error(`Fort Worth API Error: ${response.statusText}`);
@@ -55,14 +54,14 @@ export const fetchFortWorthPermits = async (): Promise<Permit[]> => {
     }
 
     return data.map(record => ({
-      id: `FW-${record.record_id}`,
-      permitNumber: record.record_id,
-      permitType: record.permit_type.includes('CO') ? 'Certificate of Occupancy' : 'Commercial Remodel',
+      id: `FW-${record.record_id || Math.random()}`,
+      permitNumber: record.record_id || 'N/A',
+      permitType: (record.permit_type || '').includes('CO') ? 'Certificate of Occupancy' : 'Commercial Remodel',
       address: record.address || 'Address Not Listed',
       city: 'Fort Worth',
       appliedDate: record.status_date ? record.status_date.split('T')[0] : new Date().toISOString().split('T')[0],
-      description: record.description || record.permit_type,
-      applicant: record.applicant_name || 'Unknown',
+      description: record.description || record.permit_type || 'No description',
+      applicant: (record.applicant_name && record.applicant_name !== 'null' && record.applicant_name.trim()) ? record.applicant_name.trim() : 'Unknown',
       valuation: parseFloat(record.job_value) || 0,
       status: record.status === 'Finaled' ? 'Issued' : 'Under Review',
       dataSource: 'Fort Worth Open Data'
@@ -72,3 +71,4 @@ export const fetchFortWorthPermits = async (): Promise<Permit[]> => {
     console.warn('Failed to fetch Fort Worth permits:', error);
     return [];
   }
+};

@@ -2,6 +2,11 @@
 import React from 'react';
 import { X, CheckCircle, AlertCircle, DollarSign, Zap, Hammer, FileCheck, Building, User, Info, Shield, Monitor, PenTool, MapPin, BadgeCheck, HelpCircle, Mail, Calendar } from 'lucide-react';
 import { EnrichedPermit, LeadCategory, CompanyProfile } from '../types';
+import { 
+  composeColdOutreachEmail, 
+  sendEmailViaBackend, 
+  generateMailtoFallback 
+} from '../services/firebaseEmail';
 
 interface AnalysisModalProps {
   permit: EnrichedPermit | null;
@@ -10,37 +15,48 @@ interface AnalysisModalProps {
 }
 
 const AnalysisModal: React.FC<AnalysisModalProps> = ({ permit, onClose, companyProfile }) => {
+  // Handle ESC key to close modal - only when modal is visible
+  // Use capture phase to ensure this runs before App.tsx handler
+  React.useEffect(() => {
+    if (!permit || !permit.aiAnalysis) return;
+    
+    const handleEsc = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        e.preventDefault();
+        e.stopPropagation();
+        onClose();
+      }
+    };
+    // Use capture phase (third parameter = true) to run before bubble phase
+    window.addEventListener('keydown', handleEsc, true);
+    return () => window.removeEventListener('keydown', handleEsc, true);
+  }, [permit, onClose]);
+
   if (!permit || !permit.aiAnalysis) return null;
 
   const { aiAnalysis, enrichmentData } = permit;
 
-  // Generate mailto link for cold outreach
+  // Generate mailto link for cold outreach (shortened + URL encoded)
   const generateEmailLink = () => {
-    const recipientEmail = enrichmentData?.verified ? 'info@company.com' : 'contact@example.com'; // In real app, use enriched contact
-    const subject = `${companyProfile?.name || 'Partnership Opportunity'} - ${permit.address}`;
+    const recipientEmail = enrichmentData?.verified ? 'info@company.com' : 'contact@example.com';
+    const subject = encodeURIComponent(`${companyProfile?.name || 'Partnership Opportunity'} - ${permit.address}`);
     
-    const body = `Hello,
+    // Shortened body to avoid mailto length limits
+    const body = encodeURIComponent(`Hello,
 
-${aiAnalysis.salesPitch}
+  ${aiAnalysis.salesPitch}
 
-We noticed your ${permit.permitType.toLowerCase()} project at ${permit.address} in ${permit.city}. ${companyProfile?.valueProp || 'We specialize in commercial build-outs and would love to discuss how we can support your project.'}
+  Project: ${permit.address}, ${permit.city}
+  Value: $${permit.valuation.toLocaleString()}
+  Applied: ${permit.appliedDate}
 
-Project Details:
-• Address: ${permit.address}, ${permit.city}
-• Permit Type: ${permit.permitType}
-• Applied: ${permit.appliedDate}
-• Project Value: $${permit.valuation.toLocaleString()}
+  Best regards,
+  ${companyProfile?.contactName || 'Your Name'}
+  ${companyProfile?.name || 'Your Company'}
+  ${companyProfile?.phone || ''}`);
 
-I'd love to schedule a brief call to discuss how we can add value to this project.
-
-Best regards,
-${companyProfile?.contactName || 'Your Name'}
-${companyProfile?.name || 'Your Company'}
-${companyProfile?.phone || ''}
-${companyProfile?.email || ''}
-${companyProfile?.website || ''}`;
-
-    return `mailto:${recipientEmail}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+    // subject/body already encoded above; do not double-encode
+    return `mailto:${recipientEmail}?subject=${subject}&body=${body}`;
   };
 
   // Generate .ics file for calendar export
@@ -92,8 +108,14 @@ ${companyProfile?.website || ''}`;
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 backdrop-blur-sm p-4 overflow-y-auto">
-      <div className="bg-slate-900 border border-slate-700 rounded-xl w-full max-w-3xl shadow-2xl relative overflow-hidden my-8 animate-in zoom-in-95 duration-200">
+    <div 
+      className="fixed inset-0 z-[100] flex items-center justify-center bg-black/70 backdrop-blur-sm p-4 overflow-y-auto"
+      onClick={onClose}
+    >
+      <div 
+        className="bg-slate-900 border border-slate-700 rounded-xl w-full max-w-3xl shadow-2xl relative overflow-hidden my-8 animate-in zoom-in-95 duration-200"
+        onClick={(e) => e.stopPropagation()}
+      >
         
         {/* Header */}
         <div className="p-6 border-b border-slate-800 flex justify-between items-start bg-slate-900 sticky top-0 z-10">
@@ -121,8 +143,12 @@ ${companyProfile?.website || ''}`;
             </h2>
             <p className="text-slate-400 text-sm mt-1">{permit.address}, {permit.city}</p>
           </div>
-          <button onClick={onClose} className="text-slate-400 hover:text-white transition-colors bg-slate-800 p-1.5 rounded-lg">
-            <X size={20} />
+          <button 
+            onClick={onClose} 
+            className="text-slate-400 hover:text-white hover:bg-red-500/20 hover:border-red-500/50 transition-all bg-slate-800 border border-slate-700 p-2 rounded-lg group"
+            title="Close (ESC)"
+          >
+            <X size={20} className="group-hover:scale-110 transition-transform" />
           </button>
         </div>
 
@@ -269,7 +295,51 @@ ${companyProfile?.website || ''}`;
                 </div>
                 <div className="space-y-2">
                   <button
-                      onClick={() => window.location.href = generateEmailLink()}
+                      onClick={async () => {
+                        try {
+                          // Compose email using Firebase email service
+                          const emailPayload = composeColdOutreachEmail({
+                            recipientEmail: (enrichmentData as any)?.verified ? (enrichmentData as any).officialMailingAddress.split('\n')[0] : 'contact@example.com',
+                            companyName: companyProfile?.name || 'Your Company',
+                            contactName: companyProfile?.contactName || 'Sales Team',
+                            contactEmail: companyProfile?.email || 'noreply@finishoutnow.app', // Use company's business email
+                            contactPhone: companyProfile?.phone,
+                            permitAddress: permit.address,
+                            permitCity: permit.city,
+                            salesPitch: aiAnalysis.salesPitch,
+                            projectValue: aiAnalysis.estimatedOpportunityValue,
+                            appliedDate: permit.appliedDate
+                          });
+
+                          // Attempt Firebase backend email delivery
+                          const result = await sendEmailViaBackend(emailPayload);
+
+                          if (result.success) {
+                            alert(`Email sent successfully from ${companyProfile?.email}! (Message ID: ${result.messageId})`);
+                            // Copy pitch for reference
+                            navigator.clipboard.writeText(aiAnalysis.salesPitch).catch(() => {});
+                          } else {
+                            console.warn('Firebase email failed, falling back to mailto:', result.error);
+                            // Fallback: open mailto link
+                            const mailtoLink = generateMailtoFallback(emailPayload);
+                            const anchor = document.createElement('a');
+                            anchor.href = mailtoLink;
+                            anchor.target = '_self';
+                            anchor.style.display = 'none';
+                            document.body.appendChild(anchor);
+                            anchor.click();
+                            document.body.removeChild(anchor);
+
+                            // Also try location.assign as backup
+                            setTimeout(() => {
+                              window.location.assign(mailtoLink);
+                            }, 100);
+                          }
+                        } catch (error) {
+                          console.error('Failed to send email:', error);
+                          alert('Unable to send email. Please try again or copy the pitch manually.');
+                        }
+                      }}
                       className="w-full bg-blue-600 hover:bg-blue-500 text-white py-3 rounded-lg font-bold transition-all hover:shadow-lg hover:shadow-blue-900/30 flex items-center justify-center gap-2"
                   >
                       <Mail size={18} />
