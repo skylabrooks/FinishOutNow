@@ -103,20 +103,58 @@ async function handleFortWorthPermits(req: ApiRequest, res: ApiResponse) {
   }
 
   try {
-    // NOTE: Fort Worth Socrata endpoint is deprecated/broken (returns HTML error page)
-    // Returning empty result gracefully until a working API is found
-    console.log(`[Fort Worth Proxy] ⚠️  Fort Worth API is deprecated - returning empty dataset`);
-    console.log(`[Fort Worth Proxy]    Endpoint https://data.fortworthtexas.gov/resource/qy5k-jz7m.json returns HTML error`);
-    console.log(`[Fort Worth Proxy]    TODO: Find alternative Fort Worth permit data source`);
-    
-    res.status(200).json({ 
-      success: true, 
-      data: [], 
-      cached: false,
-      warning: 'Fort Worth API endpoint is deprecated',
-      timestamp: Date.now()
+    const limit = req.query.limit || '20';
+    const offset = req.query.offset || '0';
+
+    const resultOffset = parseInt(offset, 10) || 0;
+    const resultRecordCount = parseInt(limit, 10) || 20;
+
+    const params = new URLSearchParams({
+      'outFields': '*',
+      'where': '1=1',
+      'resultOffset': resultOffset.toString(),
+      'resultRecordCount': resultRecordCount.toString(),
+      'f': 'json'
     });
 
+    const endpoint = `https://services5.arcgis.com/3ddLCBXe1bRt7mzj/arcgis/rest/services/CFW_Open_Data_Development_Permits_View/FeatureServer/0/query?${params.toString()}`;
+
+    console.log(`[Fort Worth Proxy] Full endpoint: ${endpoint}`);
+
+    const response = await fetch(endpoint, {
+      headers: {
+        'Accept': 'application/json',
+        'User-Agent': 'FinishOutNow-Backend/1.0'
+      }
+    });
+
+    if (!response.ok) {
+      throw new Error(`Fort Worth API Error: ${response.statusText} (${response.status})`);
+    }
+
+    const geoData = await response.json();
+
+    if (geoData.error) {
+      const detailMessage = geoData.error.message || 'Unknown Fort Worth API error';
+      const combinedDetails = Array.isArray(geoData.error.details)
+        ? geoData.error.details.join(' | ')
+        : '';
+
+      const errorMessage = combinedDetails
+        ? `${detailMessage}: ${combinedDetails}`
+        : detailMessage;
+
+      throw new Error(`Fort Worth API Error: ${errorMessage}`);
+    }
+
+    const data = geoData.features || [];
+
+    res.status(200).json({
+      success: true,
+      data,
+      cached: false,
+      timestamp: Date.now()
+    });
   } catch (error: any) {
     console.error('[Fort Worth Proxy] ✗ Error:', error?.message);
     res.status(502).json({
