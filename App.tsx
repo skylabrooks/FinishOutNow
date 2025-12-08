@@ -562,9 +562,9 @@ const AppContent: React.FC = () => {
                                 <PermitCardWithVisibility
                                     key={permit.id}
                                     permit={permit}
-                                    onSelectPermit={() => permit.aiAnalysis && setSelectedPermit(permit)}
+                                    onSelectPermit={() => { if (permit.aiAnalysis) setSelectedPermit(permit); }}
                                     onClaimLead={() => handleClaimLead(permit)}
-                                    onAnalyze={() => handleAnalyze(permit.id)}
+                                    onAnalyze={() => { void handleAnalyze(permit.id); }}
                                     isAnalyzing={loadingIds.has(permit.id)}
                                 />
                             ))
