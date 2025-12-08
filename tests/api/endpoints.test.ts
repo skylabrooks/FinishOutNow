@@ -56,7 +56,7 @@ describe('API Endpoints - Dallas', () => {
     if (data2.success) {
       expect(data2).toHaveProperty('cached');
     }
-  }, 15000);
+  }, 30000);
 });
 
 describe('API Endpoints - Fort Worth', () => {

@@ -37,11 +37,26 @@ Object.defineProperty(global, 'localStorage', {
 });
 
 // Setup window mock for browser-only features
+const eventListeners: Record<string, Function[]> = {};
+
 Object.defineProperty(global, 'window', {
   value: {
     localStorage: localStorageMock,
     location: {
       href: 'http://localhost:3000'
+    },
+    addEventListener: (event: string, handler: Function) => {
+      if (!eventListeners[event]) eventListeners[event] = [];
+      eventListeners[event].push(handler);
+    },
+    removeEventListener: (event: string, handler: Function) => {
+      if (eventListeners[event]) {
+        eventListeners[event] = eventListeners[event].filter(h => h !== handler);
+      }
+    },
+    dispatchEvent: (event: any) => {
+      const handlers = eventListeners[event.type] || [];
+      handlers.forEach(h => h(event));
     }
   },
   writable: true

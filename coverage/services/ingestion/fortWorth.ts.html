@@ -23,16 +23,16 @@
         <div class='clearfix'>
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">35.41% </span>
+                <span class="strong">79.16% </span>
                 <span class="quiet">Statements</span>
-                <span class='fraction'>17/48</span>
+                <span class='fraction'>38/48</span>
             </div>
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">25% </span>
+                <span class="strong">35.71% </span>
                 <span class="quiet">Branches</span>
-                <span class='fraction'>1/4</span>
+                <span class='fraction'>5/14</span>
             </div>
         
             
@@ -44,9 +44,9 @@
         
             
             <div class='fl pad1y space-right2'>
-                <span class="strong">35.41% </span>
+                <span class="strong">79.16% </span>
                 <span class="quiet">Lines</span>
-                <span class='fraction'>17/48</span>
+                <span class='fraction'>38/48</span>
             </div>
         
             
@@ -61,7 +61,7 @@
             </div>
         </template>
     </div>
-    <div class='status-line low'></div>
+    <div class='status-line medium'></div>
     <pre><table class="coverage">
 <tr><td class="line-count quiet"><a name='L1'></a><a href='#L1'>1</a>
 <a name='L2'></a><a href='#L2'>2</a>
@@ -179,6 +179,14 @@
 <span class="cline-any cline-yes">24x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">24x</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-yes">24x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">24x</span>
 <span class="cline-any cline-yes">24x</span>
 <span class="cline-any cline-yes">24x</span>
 <span class="cline-any cline-yes">24x</span>
@@ -186,39 +194,31 @@
 <span class="cline-any cline-yes">24x</span>
 <span class="cline-any cline-yes">24x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-neutral">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-yes">24x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">24x</span>
 <span class="cline-any cline-no">&nbsp;</span>
 <span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
-<span class="cline-any cline-no">&nbsp;</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">24x</span>
+<span class="cline-any cline-yes">24x</span>
+<span class="cline-any cline-yes">24x</span>
+<span class="cline-any cline-neutral">&nbsp;</span>
+<span class="cline-any cline-yes">24x</span>
+<span class="cline-any cline-yes">480x</span>
+<span class="cline-any cline-yes">480x</span>
+<span class="cline-any cline-yes">480x</span>
+<span class="cline-any cline-yes">480x</span>
+<span class="cline-any cline-yes">480x</span>
+<span class="cline-any cline-yes">480x</span>
+<span class="cline-any cline-yes">480x</span>
+<span class="cline-any cline-yes">480x</span>
+<span class="cline-any cline-yes">480x</span>
+<span class="cline-any cline-yes">480x</span>
+<span class="cline-any cline-yes">480x</span>
+<span class="cline-any cline-yes">480x</span>
+<span class="cline-any cline-yes">480x</span>
+<span class="cline-any cline-yes">480x</span>
 <span class="cline-any cline-yes">24x</span>
 <span class="cline-any cline-neutral">&nbsp;</span>
 <span class="cline-any cline-yes">24x</span>
@@ -259,47 +259,47 @@ export const fetchFortWorthPermits = async (): Promise&lt;Permit[]&gt; =&gt; {
     let response = await fetch(`${PROXY_ENDPOINT}?limit=20`).catch(() =&gt; null);
     let data: FWRawPermit[] = [];
 &nbsp;
-    if (response?.ok) {
-      const proxyData: FWProxyResponse = await response.json();
-      if (proxyData.success &amp;&amp; proxyData.data) {
-        data = proxyData.data;
-        console.log(`[Fort Worth] Fetched ${data.length} permits via proxy (${proxyData.<span class="branch-0 cbranch-no" title="branch not covered" >cached ? 'cached' : '</span>fresh'})`);
-      }
-<span class="branch-0 cbranch-no" title="branch not covered" >    } else {</span>
+    if (response?.ok) <span class="branch-0 cbranch-no" title="branch not covered" >{</span>
+<span class="cstat-no" title="statement not covered" >      const proxyData: FWProxyResponse = await response.json();</span>
+<span class="cstat-no" title="statement not covered" >      if (proxyData.success &amp;&amp; proxyData.data) {</span>
+<span class="cstat-no" title="statement not covered" >        data = proxyData.data;</span>
+<span class="cstat-no" title="statement not covered" >        console.log(`[Fort Worth] Fetched ${data.length} permits via proxy (${proxyData.cached ? 'cached' : 'fresh'})`);</span>
+<span class="cstat-no" title="statement not covered" >      }</span>
+    } else {
       // Fallback to direct ArcGIS API (development/bypass)
-<span class="cstat-no" title="statement not covered" >      console.warn('[Fort Worth] Proxy unavailable, trying direct ArcGIS API...');</span>
-<span class="cstat-no" title="statement not covered" >      const params = new URLSearchParams({</span>
-<span class="cstat-no" title="statement not covered" >        'outFields': '*',</span>
-<span class="cstat-no" title="statement not covered" >        'where': '1=1',</span>
-<span class="cstat-no" title="statement not covered" >        'resultRecordCount': '20',</span>
-<span class="cstat-no" title="statement not covered" >        'f': 'json'</span>
-<span class="cstat-no" title="statement not covered" >      });</span>
+      console.warn('[Fort Worth] Proxy unavailable, trying direct ArcGIS API...');
+      const params = new URLSearchParams({
+        'outFields': '*',
+        'where': '1=1',
+        'resultRecordCount': '20',
+        'f': 'json'
+      });
 &nbsp;
-<span class="cstat-no" title="statement not covered" >      response = await fetch(`${DIRECT_ENDPOINT}?${params.toString()}`);</span>
+      response = await fetch(`${DIRECT_ENDPOINT}?${params.toString()}`);
 &nbsp;
-<span class="cstat-no" title="statement not covered" >      if (!response.ok) {</span>
+      if (!response.ok) <span class="branch-0 cbranch-no" title="branch not covered" >{</span>
 <span class="cstat-no" title="statement not covered" >        throw new Error(`Fort Worth API Error: ${response.statusText}`);</span>
 <span class="cstat-no" title="statement not covered" >      }</span>
 &nbsp;
-<span class="cstat-no" title="statement not covered" >      const geoJsonData = await response.json();</span>
-<span class="cstat-no" title="statement not covered" >      data = geoJsonData.features || [];</span>
-<span class="cstat-no" title="statement not covered" >    }</span>
+      const geoJsonData = await response.json();
+      data = geoJsonData.<span class="branch-0 cbranch-no" title="branch not covered" >features || [];</span>
+    }
 &nbsp;
     return data.map(record =&gt; {
-<span class="cstat-no" title="statement not covered" >      const attrs = record.attributes || {};</span>
-<span class="cstat-no" title="statement not covered" >      return {</span>
-<span class="cstat-no" title="statement not covered" >        id: `FW-${attrs.Unique_ID || Math.random()}`,</span>
-<span class="cstat-no" title="statement not covered" >        permitNumber: attrs.Permit_No || 'N/A',</span>
-<span class="cstat-no" title="statement not covered" >        permitType: (attrs.Permit_Type || '').toLowerCase().includes('co') ? 'Certificate of Occupancy' : 'Commercial Permit',</span>
-<span class="cstat-no" title="statement not covered" >        address: attrs.Full_Street_Address || 'Address Not Listed',</span>
-<span class="cstat-no" title="statement not covered" >        city: 'Fort Worth',</span>
-<span class="cstat-no" title="statement not covered" >        appliedDate: new Date().toISOString().split('T')[0],</span>
-<span class="cstat-no" title="statement not covered" >        description: attrs.B1_WORK_DESC || attrs.Permit_Type || 'No description',</span>
-<span class="cstat-no" title="statement not covered" >        applicant: 'Unknown',</span>
-<span class="cstat-no" title="statement not covered" >        valuation: 0,</span>
-<span class="cstat-no" title="statement not covered" >        status: 'Under Review',</span>
-<span class="cstat-no" title="statement not covered" >        dataSource: 'Fort Worth Open Data (ArcGIS)'</span>
-<span class="cstat-no" title="statement not covered" >      };</span>
+      const attrs = record.<span class="branch-0 cbranch-no" title="branch not covered" >attributes || {};</span>
+      return {
+        id: `FW-${attrs.<span class="branch-0 cbranch-no" title="branch not covered" >Unique_ID || Math.random()}</span>`,
+        permitNumber: attrs.<span class="branch-0 cbranch-no" title="branch not covered" >Permit_No || 'N/A',</span>
+        permitType: (attrs.<span class="branch-0 cbranch-no" title="branch not covered" >Permit_Type || '').t</span>oLowerCase().includes('co') ? 'Certificate of Occupancy' : 'Commercial Permit',
+        address: attrs.Full_Street_Address || 'Address Not Listed',
+        city: 'Fort Worth',
+        appliedDate: new Date().toISOString().split('T')[0],
+        description: attrs.B1_WORK_DESC || attrs.<span class="branch-0 cbranch-no" title="branch not covered" >Permit_Type || 'No description',</span>
+        applicant: 'Unknown',
+        valuation: 0,
+        status: 'Under Review',
+        dataSource: 'Fort Worth Open Data (ArcGIS)'
+      };
     });
 &nbsp;
 <span class="branch-0 cbranch-no" title="branch not covered" >  } catch (error) {</span>
@@ -313,7 +313,7 @@ export const fetchFortWorthPermits = async (): Promise&lt;Permit[]&gt; =&gt; {
             <div class='footer quiet pad2 space-top1 center small'>
                 Code coverage generated by
                 <a href="https://istanbul.js.org/" target="_blank" rel="noopener noreferrer">istanbul</a>
-                at 2025-12-08T07:26:39.968Z
+                at 2025-12-08T14:46:43.547Z
             </div>
         <script src="../../prettify.js"></script>
         <script>

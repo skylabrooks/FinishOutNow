@@ -1,8 +1,9 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect, useMemo } from 'react';
 import { MapContainer, TileLayer, Marker, Popup, CircleMarker, useMap } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import type { EnrichedPermit } from '../types';
+import { geocodingService, Coordinates } from '../services/geocoding/GeocodingService';
 
 // Fix default icon path for Vite builds
 delete (L.Icon.Default as any).prototype._getIconUrl;
@@ -17,9 +18,9 @@ interface Props {
   onSelect?: (permit: EnrichedPermit) => void;
 }
 
-const DEFAULT_CENTER: [number, number] = [32.7767, -96.7970]; // Dallas
+const DEFAULT_CENTER: Coordinates = [32.7767, -96.7970]; // Dallas
 
-function FitBounds({ points }: { points: [number, number][] }) {
+function FitBounds({ points }: { points: Coordinates[] }) {
   const map = useMap();
 
   useEffect(() => {
@@ -51,63 +52,27 @@ const categoryColor = (category?: string) => {
 };
 
 export default function PermitMap({ permits, onSelect }: Props) {
-  const [coordsMap, setCoordsMap] = useState<Record<string, [number, number]>>(() => {
-    try {
-      if (typeof window === 'undefined') return {};
-      return JSON.parse(window.localStorage.getItem('finishoutnow_geocache_v1') || '{}');
-    } catch {
-      return {};
-    }
-  });
-
-  // Helper: save cache
-  const saveCache = (next: Record<string, [number, number]>) => {
-    setCoordsMap(next);
-    try { localStorage.setItem('finishoutnow_geocache_v1', JSON.stringify(next)); } catch {}
-  };
-
   // Extract addresses that need geocoding
   const toGeocode = useMemo(() => {
     return permits
       .filter(p => {
-        const key = p.address;
-        const cached = coordsMap[key];
-        const hasLatLng = (p as any).latitude !== undefined && (p as any).longitude !== undefined;
-        return !cached && !hasLatLng;
+        const existingCoords = geocodingService.extractCoordinates(p, p.address);
+        return !existingCoords && p.address && !geocodingService.isCached(p.address);
       })
       .map(p => p.address);
-  }, [permits, coordsMap]);
+  }, [permits]);
 
-  // Simple Nominatim geocoder with sequential requests and caching
+  // Geocode missing addresses with the shared service
   useEffect(() => {
     if (toGeocode.length === 0) return;
 
     let cancelled = false;
 
     (async () => {
-      const nextCache = { ...coordsMap };
       for (const addr of toGeocode) {
         if (cancelled) break;
-        try {
-          // Respect Nominatim courtesy and rate limits
-          const url = `https://nominatim.openstreetmap.org/search?format=json&q=${encodeURIComponent(addr)}&limit=1`;
-          const res = await fetch(url, { headers: { 'Accept-Language': 'en-US' } });
-          if (!res.ok) {
-            // skip but continue
-            await new Promise(r => setTimeout(r, 1000));
-            continue;
-          }
-          const json = await res.json();
-          if (json && json.length > 0) {
-            const lat = parseFloat(json[0].lat);
-            const lon = parseFloat(json[0].lon);
-            nextCache[addr] = [lat, lon];
-            saveCache(nextCache);
-          }
-        } catch (e) {
-          // ignore and continue
-        }
-        // throttle
+        await geocodingService.geocodeAddress(addr);
+        // Throttle to respect rate limits
         await new Promise(r => setTimeout(r, 1000));
       }
     })();
@@ -115,22 +80,13 @@ export default function PermitMap({ permits, onSelect }: Props) {
     return () => { cancelled = true; };
   }, [toGeocode]);
 
-  // Build list of points from permits
-  const points: { permit: EnrichedPermit; latlng: [number, number] }[] = permits.map(p => {
-    // permit may already have coordinates from ingestion (latitude/longitude or lat/lng)
-    const anyP = p as any;
-    if (anyP.latitude !== undefined && anyP.longitude !== undefined) {
-      return { permit: p, latlng: [Number(anyP.latitude), Number(anyP.longitude)] };
-    }
-    if (anyP.lat !== undefined && anyP.lng !== undefined) {
-      return { permit: p, latlng: [Number(anyP.lat), Number(anyP.lng)] };
-    }
-    const cached = coordsMap[p.address];
-    if (cached) {
-      return { permit: p, latlng: cached };
-    }
-    // fallback: spread around center so markers still render
-    return { permit: p, latlng: DEFAULT_CENTER };
+  // Build list of points from permits using the shared service
+  const points: { permit: EnrichedPermit; latlng: Coordinates }[] = permits.map(p => {
+    const coords = geocodingService.extractCoordinates(p, p.address);
+    return {
+      permit: p,
+      latlng: coords || DEFAULT_CENTER
+    };
   });
 
   const markerPoints = points.filter(pt => !!pt.latlng);

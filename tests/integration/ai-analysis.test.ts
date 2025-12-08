@@ -99,7 +99,7 @@ describe('AI Analysis - Category Classification', () => {
     );
 
     expect(result.category).toBeDefined();
-    expect(['Security', 'General', 'Unknown']).toContain(result.category);
+    expect(['Security & Access Control', 'General Remodel', 'Uncategorized']).toContain(result.category);
   }, 10000);
 
   it('should classify signage-related permits', async () => {
@@ -111,7 +111,7 @@ describe('AI Analysis - Category Classification', () => {
     );
 
     expect(result.category).toBeDefined();
-    expect(['Signage', 'General', 'Unknown']).toContain(result.category);
+    expect(['Signage & Branding', 'General Remodel', 'Uncategorized']).toContain(result.category);
   }, 10000);
 
   it('should classify low-voltage IT permits', async () => {
@@ -123,7 +123,7 @@ describe('AI Analysis - Category Classification', () => {
     );
 
     expect(result.category).toBeDefined();
-    expect(['Low Voltage', 'General', 'Unknown']).toContain(result.category);
+    expect(['IT & Low Voltage', 'General Remodel', 'Uncategorized']).toContain(result.category);
   }, 10000);
 });
 

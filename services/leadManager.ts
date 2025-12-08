@@ -7,85 +7,40 @@ import { fetchArlingtonPermits } from './ingestion/arlington';
 import { fetchPlanoPermits } from './ingestion/plano';
 import { fetchIrvingPermits } from './ingestion/irving';
 import { searchFranchiseTaxpayer } from './enrichment/comptroller';
+import { geocodingService } from './geocoding/GeocodingService';
 
-// --- Geocoding helpers (client-side with localStorage cache) ------------------
-const GEO_CACHE_KEY = 'finishoutnow_geocache_v1';
-
-function readGeoCache(): Record<string, [number, number]> {
-  try {
-    if (typeof window === 'undefined' || !window.localStorage) return {};
-    return JSON.parse(window.localStorage.getItem(GEO_CACHE_KEY) || '{}');
-  } catch {
-    return {};
-  }
-}
-
-function writeGeoCache(cache: Record<string, [number, number]>) {
-  try {
-    if (typeof window === 'undefined' || !window.localStorage) return;
-    window.localStorage.setItem(GEO_CACHE_KEY, JSON.stringify(cache));
-  } catch {
-    // ignore
-  }
-}
-
-async function geocodeAddress(address: string): Promise<[number, number] | null> {
-  try {
-    const q = encodeURIComponent(address + ' Dallas-Fort Worth, TX');
-    const url = `https://nominatim.openstreetmap.org/search?format=json&q=${q}&limit=1`;
-    const res = await fetch(url, { headers: { 'Accept-Language': 'en-US' } });
-    if (!res.ok) return null;
-    const j = await res.json();
-    if (!Array.isArray(j) || j.length === 0) return null;
-    const lat = parseFloat(j[0].lat);
-    const lon = parseFloat(j[0].lon);
-    if (isNaN(lat) || isNaN(lon)) return null;
-    return [lat, lon];
-  } catch (e) {
-    return null;
-  }
-}
-
+/**
+ * Geocode permits that don't already have coordinates.
+ * Uses the shared geocoding service with caching.
+ */
 async function geocodePermits(permits: EnrichedPermit[]) {
   if (typeof window === 'undefined' || !window.localStorage) return;
 
-  const cache = readGeoCache();
-
-  // Determine addresses to geocode (sequential to respect rate limits)
-  const toFetch: string[] = [];
-  for (const p of permits) {
-    const anyP = p as any;
+  // Collect addresses that need geocoding
+  const toGeocode: string[] = [];
+  for (const permit of permits) {
     // Skip if already has coordinates from ingestion
-    if ((anyP.latitude !== undefined && anyP.longitude !== undefined) || (anyP.lat !== undefined && anyP.lng !== undefined)) continue;
-    const key = p.address;
-    if (!key) continue;
-    if (!cache[key]) toFetch.push(key);
-  }
+    const existingCoords = geocodingService.extractCoordinates(permit, permit.address);
+    if (existingCoords) continue;
 
-  if (toFetch.length === 0) return;
-
-  for (const addr of toFetch) {
-    // polite throttle
-    await new Promise(r => setTimeout(r, 900));
-    try {
-      const coords = await geocodeAddress(addr);
-      if (coords) {
-        cache[addr] = coords;
-        writeGeoCache(cache);
-      }
-    } catch (e) {
-      // continue
+    if (permit.address && !geocodingService.isCached(permit.address)) {
+      toGeocode.push(permit.address);
     }
   }
 
-  // Apply cached coordinates back onto permits
-  for (const p of permits) {
-    const key = p.address;
-    const anyP = p as any;
-    const cached = cache[key];
-    if (cached && !(anyP.latitude !== undefined && anyP.longitude !== undefined)) {
-      anyP.latitude = cached[0];
-      anyP.longitude = cached[1];
+  if (toGeocode.length === 0) return;
+
+  // Geocode addresses with rate limiting
+  await geocodingService.geocodeBatch(toGeocode, 900);
+
+  // Apply coordinates back to permits
+  for (const permit of permits) {
+    const anyP = permit as any;
+    const coords = geocodingService.extractCoordinates(permit, permit.address);
+    
+    if (coords && !(anyP.latitude !== undefined && anyP.longitude !== undefined)) {
+      anyP.latitude = coords[0];
+      anyP.longitude = coords[1];
     }
   }
 }

@@ -1,22 +1,20 @@
-import React, { useState, useEffect } from 'react';
-import { getClaimedLeadsForBusiness } from '../services/firebaseLeads';
-import { EnrichedPermit, LeadClaim } from '../types';
+import React from 'react';
+import { EnrichedPermit } from '../types';
 import { 
   Archive, 
   Trash2, 
   Phone, 
   Mail, 
   Calendar,
-  DollarSign,
-  TrendingUp,
-  CheckCircle,
-  Clock,
   AlertCircle,
   Download,
   X,
   MapPin,
-  User
 } from 'lucide-react';
+import { useAcquiredLeads } from '../hooks/useAcquiredLeads';
+import { exportAcquiredLeadsCSV } from '../utils/csvExportHelpers';
+import { StatusBadge } from './badges/StatusBadge';
+import { getUrgencyColor } from '../utils/colorMappings';
 
 interface AcquiredLeadsDashboardProps {
   businessId: string;
@@ -26,11 +24,6 @@ interface AcquiredLeadsDashboardProps {
   companyProfile: any;
 }
 
-interface ClaimedLeadWithPermit extends LeadClaim {
-  permit?: EnrichedPermit;
-  status: 'active' | 'contacted' | 'qualified' | 'won' | 'lost';
-}
-
 export default function AcquiredLeadsDashboard({
   businessId,
   isOpen,
@@ -38,140 +31,20 @@ export default function AcquiredLeadsDashboard({
   permits,
   companyProfile,
 }: AcquiredLeadsDashboardProps) {
-  const [claimedLeads, setClaimedLeads] = useState<ClaimedLeadWithPermit[]>([]);
-  const [loading, setLoading] = useState(false);
-  const [filter, setFilter] = useState<'all' | 'active' | 'contacted' | 'qualified' | 'won' | 'lost'>('all');
-  const [sortBy, setSortBy] = useState<'date' | 'value' | 'urgency'>('date');
+  const {
+    loading,
+    filter,
+    setFilter,
+    sortBy,
+    setSortBy,
+    sortedLeads,
+    stats,
+    loadClaimedLeads,
+    claimedLeads,
+  } = useAcquiredLeads(businessId, permits, isOpen);
 
-  useEffect(() => {
-    if (isOpen) {
-      loadClaimedLeads();
-    }
-  }, [isOpen, businessId]);
-
-  const loadClaimedLeads = async () => {
-    setLoading(true);
-    try {
-      const claims = await getClaimedLeadsForBusiness(businessId);
-      
-      // Merge with permit data
-      const merged: ClaimedLeadWithPermit[] = claims.map(claim => {
-        const permit = permits.find(p => p.id === claim.leadId);
-        return {
-          ...claim,
-          permit,
-          status: 'active' as const // Default status - can be enhanced with Firestore tracking
-        };
-      });
-
-      setClaimedLeads(merged);
-    } catch (error) {
-      console.error('Failed to load claimed leads:', error);
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const filteredLeads = claimedLeads.filter(lead => {
-    if (filter === 'all') return true;
-    return lead.status === filter;
-  });
-
-  const sortedLeads = [...filteredLeads].sort((a, b) => {
-    if (sortBy === 'date') {
-      return new Date(b.claimedAt).getTime() - new Date(a.claimedAt).getTime();
-    } else if (sortBy === 'value') {
-      const valA = a.permit?.aiAnalysis?.estimatedValue || 0;
-      const valB = b.permit?.aiAnalysis?.estimatedValue || 0;
-      return valB - valA;
-    } else if (sortBy === 'urgency') {
-      const urgencyMap = { High: 3, Medium: 2, Low: 1 };
-      const urgA = urgencyMap[a.permit?.aiAnalysis?.urgency as keyof typeof urgencyMap] || 0;
-      const urgB = urgencyMap[b.permit?.aiAnalysis?.urgency as keyof typeof urgencyMap] || 0;
-      return urgB - urgA;
-    }
-    return 0;
-  });
-
-  // Calculate stats
-  const stats = {
-    total: claimedLeads.length,
-    active: claimedLeads.filter(l => l.status === 'active').length,
-    contacted: claimedLeads.filter(l => l.status === 'contacted').length,
-    qualified: claimedLeads.filter(l => l.status === 'qualified').length,
-    won: claimedLeads.filter(l => l.status === 'won').length,
-    totalValue: claimedLeads.reduce((sum, l) => sum + (l.permit?.aiAnalysis?.estimatedValue || 0), 0),
-  };
-
-  const getStatusColor = (status: string) => {
-    switch (status) {
-      case 'active':
-        return 'bg-blue-500/20 text-blue-400 border-blue-500/30';
-      case 'contacted':
-        return 'bg-yellow-500/20 text-yellow-400 border-yellow-500/30';
-      case 'qualified':
-        return 'bg-purple-500/20 text-purple-400 border-purple-500/30';
-      case 'won':
-        return 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30';
-      case 'lost':
-        return 'bg-red-500/20 text-red-400 border-red-500/30';
-      default:
-        return 'bg-slate-500/20 text-slate-400 border-slate-500/30';
-    }
-  };
-
-  const getUrgencyColor = (urgency: string) => {
-    switch (urgency) {
-      case 'High':
-        return 'text-red-400';
-      case 'Medium':
-        return 'text-yellow-400';
-      case 'Low':
-        return 'text-slate-400';
-      default:
-        return 'text-slate-400';
-    }
-  };
-
-  const exportCSV = () => {
-    const headers = [
-      'Lead ID',
-      'Address',
-      'City',
-      'Est. Value',
-      'Confidence',
-      'Urgency',
-      'Claimed Date',
-      'Status',
-      'Project Type'
-    ];
-
-    const rows = sortedLeads.map(lead => [
-      lead.leadId,
-      lead.permit?.address || 'N/A',
-      lead.permit?.city || 'N/A',
-      `$${(lead.permit?.aiAnalysis?.estimatedValue || 0).toLocaleString()}`,
-      `${lead.permit?.aiAnalysis?.confidenceScore || 0}%`,
-      lead.permit?.aiAnalysis?.urgency || 'N/A',
-      new Date(lead.claimedAt).toLocaleDateString(),
-      lead.status,
-      lead.permit?.permitType || 'N/A'
-    ]);
-
-    const csvContent = [
-      headers.join(','),
-      ...rows.map(row => row.map(cell => `"${cell}"`).join(','))
-    ].join('\n');
-
-    const blob = new Blob([csvContent], { type: 'text/csv' });
-    const url = window.URL.createObjectURL(blob);
-    const link = document.createElement('a');
-    link.href = url;
-    link.download = `acquired_leads_${new Date().toISOString().split('T')[0]}.csv`;
-    document.body.appendChild(link);
-    link.click();
-    document.body.removeChild(link);
-    window.URL.revokeObjectURL(url);
+  const handleExportCSV = () => {
+    exportAcquiredLeadsCSV(sortedLeads);
   };
 
   if (!isOpen) return null;
@@ -256,7 +129,7 @@ export default function AcquiredLeadsDashboard({
             </select>
 
             <button
-              onClick={exportCSV}
+              onClick={handleExportCSV}
               disabled={sortedLeads.length === 0}
               className="px-3 py-1 bg-slate-800 hover:bg-slate-700 disabled:opacity-50 border border-slate-700 text-slate-300 rounded text-xs font-medium flex items-center gap-1 transition-colors"
             >
@@ -306,9 +179,7 @@ export default function AcquiredLeadsDashboard({
                         <h3 className="font-bold text-white text-sm">
                           {lead.permit?.address || `Lead ${lead.leadId}`}
                         </h3>
-                        <span className={`px-2 py-0.5 rounded text-[10px] font-bold border ${getStatusColor(lead.status)}`}>
-                          {lead.status.toUpperCase()}
-                        </span>
+                        <StatusBadge status={lead.status} />
                       </div>
                       <p className="text-xs text-slate-400 flex items-center gap-1">
                         <MapPin size={12} />
