@@ -13,6 +13,7 @@ import PermitCardWithVisibility from './components/PermitCardWithVisibility';
 import ScoringAnalytics from './components/ScoringAnalytics';
 import { ErrorBoundary } from './components/ErrorBoundary';
 import { AuthProvider, useAuth } from './services/AuthContext';
+import { registerUser } from './services/firebase';
 import { LayoutDashboard, Map as MapIcon, FileText, Settings, Search, Loader2, Sparkles, AlertTriangle, ArrowUpDown, Calendar, DollarSign, Hammer, FileCheck, Shield, Monitor, PenTool, Download, PlayCircle, Zap, RefreshCw, Radio, User, CheckCircle } from 'lucide-react';
 
 // Default Profile for Demo
@@ -20,7 +21,6 @@ const DEFAULT_PROFILE: CompanyProfile = {
     name: "Apex Security Integrators",
     industry: LeadCategory.SECURITY,
     contactName: "Mike Ross",
-    email: "mike@apexdfw.com",
     phone: "214-555-0199",
     website: "www.apexdfw.com",
     valueProp: "We specialize in rapid access control deployment for high-security commercial tenants."
@@ -30,6 +30,9 @@ const STORAGE_KEY_PERMITS = 'finishOutNow_permits_v1';
 const STORAGE_KEY_PROFILE = 'finishOutNow_profile_v1';
 
 const AppContent: React.FC = () => {
+  // Auth Context
+  const { user, login, isLoading: authLoading } = useAuth();
+
   // Persistence: Load from LocalStorage or Fallback to Mock
   const [permits, setPermits] = useState<EnrichedPermit[]>(() => {
     try {
@@ -64,6 +67,26 @@ const AppContent: React.FC = () => {
   // Sorting state
   const [sortKey, setSortKey] = useState<'appliedDate' | 'valuation' | 'city' | 'confidence'>('appliedDate');
   const [sortDirection, setSortDirection] = useState<'asc' | 'desc'>('desc');
+
+  // Demo auto-login for development
+  useEffect(() => {
+    if (!authLoading && !user) {
+      const demoLogin = async () => {
+        try {
+          await login('demo@finishoutnow.app', 'Demo123!@#');
+        } catch (err) {
+          // Try registration if login fails (first time)
+          try {
+            await registerUser('demo@finishoutnow.app', 'Demo123!@#');
+            await login('demo@finishoutnow.app', 'Demo123!@#');
+          } catch (regErr) {
+            console.warn('Demo auth failed (Firestore may be offline):', regErr);
+          }
+        }
+      };
+      demoLogin();
+    }
+  }, [authLoading, user, login]);
 
   // Initial Data Fetch
   useEffect(() => {
@@ -475,8 +498,8 @@ const AppContent: React.FC = () => {
         <LeadClaimModal
           permit={selectedLeadForClaim}
           businessName={companyProfile.name}
-          userEmail="user@example.com"
-          businessId="demo-business"
+          userEmail={user?.email || "user@example.com"}
+          businessId={user?.uid || "demo-business"}
           onClaimed={handleLeadClaimed}
           onClose={() => setShowClaimModal(false)}
         />

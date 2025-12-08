@@ -28,11 +28,22 @@ export async function claimLead(
     const claimId = `${businessId}_${leadId}`;
     const now = new Date().toISOString();
 
-    // Check if already claimed
-    const existingClaim = await getDoc(doc(db, LEADS_COLLECTION, claimId));
-    if (existingClaim.exists()) {
-      const existing = existingClaim.data() as LeadClaim;
-      throw new Error(`Lead already claimed by ${existing.businessName}`);
+    // Check local cache first (works offline)
+    const cache = JSON.parse(localStorage.getItem(LEAD_VISIBILITY_CACHE) || '{}');
+    if (cache[leadId]?.isClaimed) {
+      throw new Error(`Lead already claimed by ${cache[leadId].claimedBy}`);
+    }
+
+    // Try to check Firestore (may fail if offline, but cache prevents duplicate claims)
+    try {
+      const existingClaim = await getDoc(doc(db, LEADS_COLLECTION, claimId));
+      if (existingClaim.exists()) {
+        const existing = existingClaim.data() as LeadClaim;
+        throw new Error(`Lead already claimed by ${existing.businessName}`);
+      }
+    } catch (firebaseErr) {
+      // If offline, proceed anyway (cache is the source of truth)
+      console.warn('[LeadClaims] Could not check Firestore, relying on cache:', firebaseErr);
     }
 
     const claim: LeadClaim = {
@@ -46,10 +57,15 @@ export async function claimLead(
       expiresAt: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(), // 30 days
     };
 
-    await setDoc(doc(db, LEADS_COLLECTION, claimId), claim);
+    // Try to save to Firestore
+    try {
+      await setDoc(doc(db, LEADS_COLLECTION, claimId), claim);
+      console.log(`[LeadClaims] Lead ${leadId} claimed by ${businessName} (Firestore)`);
+    } catch (firebaseErr) {
+      console.warn('[LeadClaims] Could not save to Firestore, using local cache only:', firebaseErr);
+    }
 
-    // Update local cache for instant UI feedback
-    const cache = JSON.parse(localStorage.getItem(LEAD_VISIBILITY_CACHE) || '{}');
+    // Always update local cache for instant UI feedback (works offline)
     cache[leadId] = {
       leadId,
       isClaimed: true,

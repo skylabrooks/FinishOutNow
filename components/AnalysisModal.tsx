@@ -2,11 +2,6 @@
 import React from 'react';
 import { X, CheckCircle, AlertCircle, DollarSign, Zap, Hammer, FileCheck, Building, User, Info, Shield, Monitor, PenTool, MapPin, BadgeCheck, HelpCircle, Mail, Calendar } from 'lucide-react';
 import { EnrichedPermit, LeadCategory, CompanyProfile } from '../types';
-import { 
-  composeColdOutreachEmail, 
-  sendEmailViaBackend, 
-  generateMailtoFallback 
-} from '../services/firebaseEmail';
 
 interface AnalysisModalProps {
   permit: EnrichedPermit | null;
@@ -295,55 +290,14 @@ const AnalysisModal: React.FC<AnalysisModalProps> = ({ permit, onClose, companyP
                 </div>
                 <div className="space-y-2">
                   <button
-                      onClick={async () => {
-                        try {
-                          // Compose email using Firebase email service
-                          const emailPayload = composeColdOutreachEmail({
-                            recipientEmail: (enrichmentData as any)?.verified ? (enrichmentData as any).officialMailingAddress.split('\n')[0] : 'contact@example.com',
-                            companyName: companyProfile?.name || 'Your Company',
-                            contactName: companyProfile?.contactName || 'Sales Team',
-                            contactEmail: companyProfile?.email || 'noreply@finishoutnow.app', // Use company's business email
-                            contactPhone: companyProfile?.phone,
-                            permitAddress: permit.address,
-                            permitCity: permit.city,
-                            salesPitch: aiAnalysis.salesPitch,
-                            projectValue: aiAnalysis.estimatedOpportunityValue,
-                            appliedDate: permit.appliedDate
-                          });
-
-                          // Attempt Firebase backend email delivery
-                          const result = await sendEmailViaBackend(emailPayload);
-
-                          if (result.success) {
-                            alert(`Email sent successfully from ${companyProfile?.email}! (Message ID: ${result.messageId})`);
-                            // Copy pitch for reference
-                            navigator.clipboard.writeText(aiAnalysis.salesPitch).catch(() => {});
-                          } else {
-                            console.warn('Firebase email failed, falling back to mailto:', result.error);
-                            // Fallback: open mailto link
-                            const mailtoLink = generateMailtoFallback(emailPayload);
-                            const anchor = document.createElement('a');
-                            anchor.href = mailtoLink;
-                            anchor.target = '_self';
-                            anchor.style.display = 'none';
-                            document.body.appendChild(anchor);
-                            anchor.click();
-                            document.body.removeChild(anchor);
-
-                            // Also try location.assign as backup
-                            setTimeout(() => {
-                              window.location.assign(mailtoLink);
-                            }, 100);
-                          }
-                        } catch (error) {
-                          console.error('Failed to send email:', error);
-                          alert('Unable to send email. Please try again or copy the pitch manually.');
-                        }
+                      onClick={() => {
+                        navigator.clipboard.writeText(aiAnalysis.salesPitch).catch(() => {});
+                        alert('Sales pitch copied to clipboard!');
                       }}
                       className="w-full bg-blue-600 hover:bg-blue-500 text-white py-3 rounded-lg font-bold transition-all hover:shadow-lg hover:shadow-blue-900/30 flex items-center justify-center gap-2"
                   >
                       <Mail size={18} />
-                      Claim & Contact
+                      Copy Pitch
                   </button>
                   <button
                       onClick={exportToCalendar}

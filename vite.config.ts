@@ -18,10 +18,6 @@ export default defineConfig(({ mode }) => {
           '/api/permits-fortworth': {
             target: 'http://localhost:3001',
             changeOrigin: true,
-          },
-          '/api/send-email': {
-            target: 'http://localhost:3001',
-            changeOrigin: true,
           }
         }
       },

@@ -70,7 +70,6 @@ export interface CompanyProfile {
   name: string;
   industry: LeadCategory;
   contactName: string;
-  email: string;
   phone: string;
   website: string;
   valueProp: string;

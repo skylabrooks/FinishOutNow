@@ -182,21 +182,25 @@ export default function PermitCardWithVisibility({
                 </div>
               )}
 
-              <button className="w-full mt-2 text-xs font-medium text-blue-400 hover:text-blue-300 flex items-center justify-center gap-1">
-                View Analysis <PlayCircle size={12} />
-              </button>
+              <div className="space-y-2 pt-2">
+                {isLocked && (
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      onClaimLead();
+                    }}
+                    className="w-full bg-amber-600 hover:bg-amber-700 text-white border border-amber-600 px-4 py-2 rounded-lg text-xs font-semibold transition-all flex items-center justify-center gap-2"
+                  >
+                    🔐 Claim Lead
+                  </button>
+                )}
+                <button className="w-full text-xs font-medium text-blue-400 hover:text-blue-300 flex items-center justify-center gap-1">
+                  View Analysis <PlayCircle size={12} />
+                </button>
+              </div>
             </div>
           ) : (
             <div className="h-full flex flex-col items-center justify-center gap-2">
-              <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  onClaimLead();
-                }}
-                className="w-full bg-amber-600 hover:bg-amber-700 text-white border border-amber-600 px-4 py-2 rounded-lg text-xs font-semibold transition-all flex items-center justify-center gap-2"
-              >
-                🔐 Claim Lead
-              </button>
               <button
                 onClick={(e) => {
                   e.stopPropagation();

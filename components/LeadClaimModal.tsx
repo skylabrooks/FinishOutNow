@@ -41,7 +41,14 @@ export default function LeadClaimModal({
         onClose();
       }, 1500);
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to claim lead');
+      const errorMsg = err instanceof Error ? err.message : 'Failed to claim lead';
+      
+      // Check if it's a Firebase offline/permission error
+      if (errorMsg.includes('offline') || errorMsg.includes('permission') || errorMsg.includes('Failed to get')) {
+        setError(`${errorMsg}. If this persists, check Firebase Firestore Rules (see docs/FIRESTORE_FIX_URGENT.md)`);
+      } else {
+        setError(errorMsg);
+      }
     } finally {
       setLoading(false);
     }

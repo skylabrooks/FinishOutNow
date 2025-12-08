@@ -31,6 +31,11 @@ const firebaseConfig = {
   measurementId: (import.meta as any).env.VITE_FIREBASE_MEASUREMENT_ID || process.env.VITE_FIREBASE_MEASUREMENT_ID
 };
 
+// Debug: Log what we're loading
+console.log('[Firebase] Initializing with project:', firebaseConfig.projectId);
+console.log('[Firebase] API Key present:', !!firebaseConfig.apiKey);
+console.log('[Firebase] Auth Domain:', firebaseConfig.authDomain);
+
 // Initialize Firebase
 let app: FirebaseApp;
 let auth: Auth;
@@ -41,6 +46,9 @@ try {
   app = initializeApp(firebaseConfig);
   auth = getAuth(app);
   db = getFirestore(app);
+  
+  console.log('[Firebase] ✅ Firebase initialized successfully');
+  console.log('[Firebase] ✅ Firestore initialized for project:', firebaseConfig.projectId);
   
   // Enable persistent authentication across browser sessions
   setPersistence(auth, browserLocalPersistence).catch(err => {
