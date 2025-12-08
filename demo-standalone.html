@@ -1,0 +1,471 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FinishOutNow - Interactive Product Demo</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+        @keyframes bounce {
+            0%, 100% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+        }
+        .animate-pulse { animation: pulse 2s cubic-bezier(0.4, 0, 0.6, 1) infinite; }
+        .animate-bounce { animation: bounce 1s infinite; }
+        .scale-105 { transform: scale(1.05); }
+        svg { display: inline-block; }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 text-slate-100">
+
+<div id="app">
+    <div class="min-h-screen flex flex-col">
+        <!-- Header -->
+        <div class="border-b border-slate-700 bg-slate-800/50 backdrop-blur sticky top-0 z-40">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
+                <div class="flex items-center justify-between">
+                    <div class="flex items-center gap-3">
+                        <div class="w-10 h-10 bg-gradient-to-br from-blue-500 to-cyan-500 rounded-lg flex items-center justify-center text-white font-bold text-lg">⚡</div>
+                        <div>
+                            <h1 class="text-2xl font-bold text-white">FinishOutNow</h1>
+                            <p class="text-sm text-slate-400">Interactive Product Demo</p>
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-2 bg-slate-700 rounded-lg p-1">
+                        <button id="playBtn" class="p-2 hover:bg-slate-600 rounded transition-colors text-slate-300 hover:text-white" title="Play demo">▶</button>
+                        <button id="resetBtn" class="p-2 hover:bg-slate-600 rounded transition-colors text-slate-300 hover:text-white" title="Reset demo">↻</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Content -->
+        <div class="flex-1 max-w-7xl mx-auto w-full px-4 sm:px-6 lg:px-8 py-8">
+            <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+                <!-- Left: Step Info -->
+                <div class="lg:col-span-1">
+                    <div id="stepCard" class="bg-gradient-to-br from-blue-600 to-blue-700 rounded-lg p-6 text-white mb-6 transition-all">
+                        <div class="flex items-start gap-4">
+                            <div class="text-blue-200 text-3xl" id="stepIcon">🎯</div>
+                            <div class="flex-1">
+                                <h2 id="stepTitle" class="text-xl font-bold mb-2">Welcome to FinishOutNow</h2>
+                                <p id="stepDesc" class="text-blue-100 text-sm mb-4">The AI-powered commercial lead intelligence platform</p>
+                                <div class="bg-blue-500/30 border border-blue-400 rounded px-3 py-2">
+                                    <p id="stepAction" class="text-sm font-medium">🔹 Click to start the demo</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Progress -->
+                    <div class="bg-slate-700 rounded-lg p-4 mb-6">
+                        <div class="flex items-center justify-between mb-3">
+                            <span class="text-sm font-semibold text-slate-300">Progress</span>
+                            <span id="progress" class="text-sm text-slate-400">1 of 11</span>
+                        </div>
+                        <div class="w-full bg-slate-600 rounded-full h-2">
+                            <div id="progressBar" class="bg-gradient-to-r from-blue-500 to-cyan-500 h-2 rounded-full transition-all duration-300" style="width: 9.09%"></div>
+                        </div>
+                    </div>
+
+                    <!-- Navigation -->
+                    <div class="flex gap-3">
+                        <button id="backBtn" class="flex-1 px-4 py-2 bg-slate-700 hover:bg-slate-600 text-white rounded-lg transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed">← Back</button>
+                        <button id="nextBtn" class="flex-1 px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg transition-colors font-medium">Next →</button>
+                    </div>
+                </div>
+
+                <!-- Right: Demo Content -->
+                <div id="demoContent" class="lg:col-span-2 space-y-6">
+                    <!-- Will be populated by JavaScript -->
+                </div>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="border-t border-slate-700 bg-slate-800/50 mt-12">
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
+                <div class="flex items-center justify-between text-sm text-slate-400">
+                    <p>© 2025 FinishOutNow. AI-Powered Commercial Lead Intelligence.</p>
+                    <div class="flex gap-4">
+                        <a href="#" class="hover:text-slate-300 transition-colors">Docs</a>
+                        <a href="#" class="hover:text-slate-300 transition-colors">GitHub</a>
+                        <a href="#" class="hover:text-slate-300 transition-colors">Contact</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    const demoPermits = [
+        {
+            id: '1',
+            address: '4500 N Macarthur Blvd, Suite 300',
+            city: 'Irving',
+            description: 'Commercial Tenant Improvement - Suite 300 (15,000 sq ft). New lighting, HVAC, flooring, access control system installation',
+            value: 385000,
+            status: 'new',
+            score: 94,
+            triggers: ['Access Control', 'Tenant Improvement', 'Electrical Work', 'HVAC']
+        },
+        {
+            id: '2',
+            address: '2300 N Dallas Tollway, Suite 200',
+            city: 'Dallas',
+            description: 'New security system installation for financial services office. Phase 1: Cameras, access control, monitoring center',
+            value: 250000,
+            status: 'qualified',
+            score: 88,
+            triggers: ['Security System', 'Certificate of Occupancy', 'Access Control']
+        },
+        {
+            id: '3',
+            address: '8800 N Central Expwy, Floor 4',
+            city: 'Dallas',
+            description: 'Tech startup office build-out. Full interior renovation with IT infrastructure, signage, parking lot improvements',
+            value: 520000,
+            status: 'contacted',
+            score: 91,
+            triggers: ['New Construction', 'Interior Renovation', 'Certificate of Occupancy']
+        },
+        {
+            id: '4',
+            address: '1234 W 15th St, Building A',
+            city: 'Fort Worth',
+            description: 'Industrial warehouse renovation. Roof repair, electrical upgrade, new HVAC system, lighting retrofit',
+            value: 425000,
+            status: 'new',
+            score: 82,
+            triggers: ['Roof Work', 'Electrical Upgrade', 'HVAC', 'Industrial']
+        }
+    ];
+
+    const steps = [
+        {
+            id: 'overview',
+            title: 'Welcome to FinishOutNow',
+            description: 'The AI-powered commercial lead intelligence platform that identifies high-value construction opportunities in Dallas-Fort Worth',
+            action: 'Automatically discovers permits from 5 cities in real-time',
+            icon: '🎯'
+        },
+        {
+            id: 'data-collection',
+            title: 'Real-Time Data Collection',
+            description: 'The platform continuously monitors permit databases from Dallas, Fort Worth, Arlington, Plano, and Irving',
+            action: 'New permits appear within minutes of filing',
+            icon: '⚡'
+        },
+        {
+            id: 'normalization',
+            title: 'Intelligent Data Cleaning',
+            description: 'Raw permit data is messy. We normalize addresses, standardize project types, and extract key details',
+            action: 'Raw → Cleaned → Ready to analyze',
+            icon: '🔧'
+        },
+        {
+            id: 'ai-analysis',
+            title: 'AI-Powered Analysis',
+            description: 'Gemini 2.5 analyzes each permit and scores opportunities based on your industry triggers',
+            action: 'Each permit gets a commercial potential score (0-100)',
+            icon: '🤖'
+        },
+        {
+            id: 'permits-list',
+            title: 'Qualified Opportunities',
+            description: 'See all qualified permits with AI analysis scores, commercial triggers, and project details',
+            action: 'Click on any permit to see full analysis',
+            icon: '🏢'
+        },
+        {
+            id: 'scoring',
+            title: 'Smart Scoring System',
+            description: 'Each opportunity is scored based on match to your company profile and industry triggers',
+            action: '94/100: High-probability commercial opportunity',
+            icon: '📈'
+        },
+        {
+            id: 'map-view',
+            title: 'Geographic Intelligence',
+            description: 'See all leads on an interactive map with filtering by city, project type, and value',
+            action: 'Click "View Map" to explore spatial distribution',
+            icon: '🗺️'
+        },
+        {
+            id: 'analytics',
+            title: 'Real-Time Analytics',
+            description: 'Track opportunities by city, industry trigger, and project value with dynamic charts',
+            action: 'Click "View Analytics" to see trends',
+            icon: '📊'
+        },
+        {
+            id: 'claiming',
+            title: 'Lead Management',
+            description: 'Claim leads, track contact history, and manage your sales pipeline directly in the app',
+            action: 'Never lose track of an opportunity again',
+            icon: '✅'
+        },
+        {
+            id: 'outreach',
+            title: 'One-Click Outreach',
+            description: 'Generate customized emails, calendar invites, and export leads to CSV for your CRM',
+            action: 'Seamless integration with your sales workflow',
+            icon: '📧'
+        },
+        {
+            id: 'finish',
+            title: 'Ready to Transform Your Lead Generation?',
+            description: 'FinishOutNow turns public permit data into qualified sales opportunities with AI precision',
+            action: 'Start discovering high-value leads today',
+            icon: '🚀'
+        }
+    ];
+
+    let currentStep = 0;
+    let isPlaying = false;
+    let playTimer = null;
+    let selectedPermit = null;
+
+    const updateStep = () => {
+        const step = steps[currentStep];
+        
+        // Update header
+        document.getElementById('stepTitle').textContent = step.title;
+        document.getElementById('stepDesc').textContent = step.description;
+        document.getElementById('stepAction').innerHTML = '🔹 ' + step.action;
+        document.getElementById('stepIcon').textContent = step.icon;
+        document.getElementById('progress').textContent = `${currentStep + 1} of ${steps.length}`;
+        
+        const progressPercent = ((currentStep + 1) / steps.length) * 100;
+        document.getElementById('progressBar').style.width = progressPercent + '%';
+
+        // Update button states
+        document.getElementById('backBtn').disabled = currentStep === 0;
+        document.getElementById('nextBtn').disabled = currentStep === steps.length - 1;
+
+        // Update content
+        renderContent();
+    };
+
+    const renderContent = () => {
+        const content = document.getElementById('demoContent');
+        const step = steps[currentStep];
+
+        if (['overview', 'data-collection', 'normalization'].includes(step.id)) {
+            if (step.id === 'overview' || step.id === 'data-collection') {
+                content.innerHTML = `
+                    <div class="bg-slate-700 rounded-lg p-6">
+                        <h3 class="text-white font-bold mb-4">Real-Time Data Sources</h3>
+                        <div class="grid grid-cols-2 gap-3">
+                            ${['Dallas Open Data', 'Fort Worth', 'Arlington', 'Plano', 'Irving', 'Custom APIs']
+                                .map(city => `
+                                <div class="bg-slate-600 rounded p-3 flex items-center gap-2 hover:bg-slate-500 transition-colors cursor-pointer">
+                                    <div class="w-2 h-2 bg-green-500 rounded-full animate-pulse"></div>
+                                    <span class="text-sm text-slate-200">${city}</span>
+                                </div>
+                            `).join('')}
+                        </div>
+                    </div>
+                `;
+            } else if (step.id === 'normalization') {
+                content.innerHTML = `
+                    <div class="bg-slate-700 rounded-lg p-6">
+                        <h3 class="text-white font-bold mb-4">Data Normalization Example</h3>
+                        <div class="space-y-4">
+                            <div>
+                                <p class="text-xs text-slate-400 mb-2">Before:</p>
+                                <div class="bg-red-900/20 border border-red-700 rounded p-3 text-sm text-slate-300 font-mono">
+                                    "Comm TI suite 400 new HVAC paint flooring lighting"
+                                </div>
+                            </div>
+                            <div class="flex justify-center">
+                                <div class="text-slate-400">↓</div>
+                            </div>
+                            <div>
+                                <p class="text-xs text-slate-400 mb-2">After:</p>
+                                <div class="bg-green-900/20 border border-green-700 rounded p-3 text-sm text-slate-300 font-mono space-y-1">
+                                    <div><span class="text-green-400">projectType:</span> "Tenant Improvement"</div>
+                                    <div><span class="text-green-400">description:</span> "Suite 400 - Full Interior"</div>
+                                    <div><span class="text-green-400">value:</span> 275000</div>
+                                    <div><span class="text-green-400">triggers:</span> ["HVAC", "Flooring", "Lighting"]</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }
+        } else if (step.id === 'ai-analysis') {
+            content.innerHTML = `
+                <div class="bg-slate-700 rounded-lg p-6">
+                    <h3 class="text-white font-bold mb-4">Gemini 2.5 AI Analysis</h3>
+                    <div class="bg-slate-600 rounded p-4 space-y-3">
+                        <div class="flex items-center justify-between text-sm">
+                            <span class="text-slate-300">Commercial Trigger Detected:</span>
+                            <span class="bg-green-500/20 text-green-300 px-2 py-1 rounded text-xs font-medium">Access Control System</span>
+                        </div>
+                        <div class="flex items-center justify-between text-sm">
+                            <span class="text-slate-300">Project Type:</span>
+                            <span class="text-slate-200">Tenant Improvement</span>
+                        </div>
+                        <div class="flex items-center justify-between text-sm">
+                            <span class="text-slate-300">Confidence Score:</span>
+                            <span class="text-cyan-300 font-bold">94/100</span>
+                        </div>
+                        <div class="flex items-center justify-between text-sm">
+                            <span class="text-slate-300">Recommended Action:</span>
+                            <span class="text-yellow-300">Contact within 48 hours</span>
+                        </div>
+                    </div>
+                </div>
+            `;
+        } else if (['permits-list', 'scoring', 'claiming', 'outreach'].includes(step.id)) {
+            content.innerHTML = `
+                <div class="bg-slate-700 rounded-lg p-6">
+                    <h3 class="text-white font-bold mb-4">Qualified Opportunities (${demoPermits.length})</h3>
+                    <div class="space-y-3">
+                        ${demoPermits.map(permit => `
+                            <div class="bg-slate-600 rounded-lg p-4 cursor-pointer hover:bg-slate-500 transition-all transform hover:scale-105 ${selectedPermit === permit.id ? 'ring-2 ring-blue-500' : ''}" onclick="togglePermit('${permit.id}')">
+                                <div class="flex items-start justify-between mb-2">
+                                    <div class="flex-1">
+                                        <h4 class="text-white font-semibold text-sm">${permit.address}</h4>
+                                        <p class="text-xs text-slate-400 mt-1">📍 ${permit.city}</p>
+                                    </div>
+                                    <div class="px-3 py-1 rounded text-xs font-bold ${
+                                        permit.status === 'new' ? 'bg-blue-500/20 text-blue-300' :
+                                        permit.status === 'qualified' ? 'bg-green-500/20 text-green-300' :
+                                        'bg-purple-500/20 text-purple-300'
+                                    }">
+                                        ${permit.status === 'new' ? '🟦 New' : permit.status === 'qualified' ? '🟩 Qualified' : '✅ Contacted'}
+                                    </div>
+                                </div>
+                                <p class="text-xs text-slate-300 mb-3">${permit.description}</p>
+                                <div class="flex items-center justify-between">
+                                    <div class="flex items-center gap-4 text-xs">
+                                        <div class="flex items-center gap-1 text-slate-400">💰 $${(permit.value / 1000).toFixed(0)}K</div>
+                                        <div class="font-bold ${permit.score >= 90 ? 'text-green-400' : permit.score >= 80 ? 'text-yellow-400' : 'text-orange-400'}">Score: ${permit.score}/100</div>
+                                    </div>
+                                </div>
+                                ${selectedPermit === permit.id ? `
+                                    <div class="mt-4 pt-4 border-t border-slate-500 space-y-3">
+                                        <div>
+                                            <p class="text-xs text-slate-400 mb-2">Commercial Triggers:</p>
+                                            <div class="flex flex-wrap gap-2">
+                                                ${permit.triggers.map(trigger => `<span class="bg-blue-500/30 text-blue-300 px-2 py-1 rounded text-xs">${trigger}</span>`).join('')}
+                                            </div>
+                                        </div>
+                                        <div class="flex gap-2">
+                                            <button class="flex-1 bg-blue-600 hover:bg-blue-700 text-white text-xs py-2 rounded transition-colors">✅ Claim Lead</button>
+                                            <button class="flex-1 bg-slate-500 hover:bg-slate-400 text-white text-xs py-2 rounded transition-colors">📧 Email</button>
+                                            <button class="flex-1 bg-slate-500 hover:bg-slate-400 text-white text-xs py-2 rounded transition-colors">📅 Calendar</button>
+                                        </div>
+                                    </div>
+                                ` : ''}
+                            </div>
+                        `).join('')}
+                    </div>
+                </div>
+            `;
+        } else if (['map-view', 'analytics'].includes(step.id)) {
+            content.innerHTML = `
+                <div class="grid grid-cols-2 gap-4">
+                    <button class="bg-slate-700 hover:bg-slate-600 text-white p-6 rounded-lg transition-all transform hover:scale-105 flex flex-col items-center justify-center gap-3" onclick="toggleView('map')">
+                        <span class="text-3xl">🗺️</span>
+                        <span class="font-semibold">View Map</span>
+                        <span class="text-xs text-slate-400">See leads by location</span>
+                    </button>
+                    <button class="bg-slate-700 hover:bg-slate-600 text-white p-6 rounded-lg transition-all transform hover:scale-105 flex flex-col items-center justify-center gap-3" onclick="toggleView('analytics')">
+                        <span class="text-3xl">📊</span>
+                        <span class="font-semibold">View Analytics</span>
+                        <span class="text-xs text-slate-400">Analyze trends</span>
+                    </button>
+                </div>
+            `;
+        } else if (step.id === 'finish') {
+            content.innerHTML = `
+                <div class="bg-gradient-to-br from-green-600 to-cyan-600 rounded-lg p-8 text-center text-white">
+                    <div class="text-6xl mb-4 animate-bounce">✅</div>
+                    <h3 class="text-2xl font-bold mb-3">Demo Complete!</h3>
+                    <p class="text-white/90 mb-6">You've seen how FinishOutNow transforms public permit data into actionable sales intelligence.</p>
+                    <div class="space-y-3">
+                        <p class="text-sm font-semibold text-white/80">Key Features:</p>
+                        <ul class="text-sm text-white/80 space-y-2">
+                            <li>✓ Real-time permit monitoring across 5 cities</li>
+                            <li>✓ AI-powered opportunity scoring</li>
+                            <li>✓ Interactive map and analytics</li>
+                            <li>✓ One-click lead management</li>
+                        </ul>
+                    </div>
+                </div>
+            `;
+        }
+    };
+
+    const togglePermit = (id) => {
+        selectedPermit = selectedPermit === id ? null : id;
+        renderContent();
+    };
+
+    const toggleView = (view) => {
+        alert(`${view} view would open here`);
+    };
+
+    const nextStep = () => {
+        if (currentStep < steps.length - 1) {
+            currentStep++;
+            updateStep();
+            if (isPlaying && currentStep === steps.length - 1) {
+                isPlaying = false;
+                document.getElementById('playBtn').textContent = '▶';
+            }
+        }
+    };
+
+    const prevStep = () => {
+        if (currentStep > 0) {
+            currentStep--;
+            updateStep();
+        }
+    };
+
+    const resetDemo = () => {
+        currentStep = 0;
+        isPlaying = false;
+        selectedPermit = null;
+        document.getElementById('playBtn').textContent = '▶';
+        if (playTimer) clearTimeout(playTimer);
+        updateStep();
+    };
+
+    const togglePlay = () => {
+        isPlaying = !isPlaying;
+        document.getElementById('playBtn').textContent = isPlaying ? '⏸' : '▶';
+        if (isPlaying) {
+            playTimer = setInterval(() => {
+                if (currentStep < steps.length - 1) {
+                    nextStep();
+                } else {
+                    isPlaying = false;
+                    document.getElementById('playBtn').textContent = '▶';
+                    clearInterval(playTimer);
+                }
+            }, 4000);
+        } else {
+            clearInterval(playTimer);
+        }
+    };
+
+    document.getElementById('playBtn').addEventListener('click', togglePlay);
+    document.getElementById('resetBtn').addEventListener('click', resetDemo);
+    document.getElementById('nextBtn').addEventListener('click', nextStep);
+    document.getElementById('backBtn').addEventListener('click', prevStep);
+
+    updateStep();
+</script>
+
+</body>
+</html>
