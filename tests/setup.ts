@@ -47,9 +47,21 @@ Object.defineProperty(global, 'window', {
   writable: true
 });
 
-// Mock process.env for tests
-process.env.API_KEY = 'test-gemini-api-key';
-process.env.VITE_GEMINI_API_KEY = 'test-gemini-api-key';
+// Load environment variables from .env.local for tests
+// This ensures API credentials are available during integration tests
+import { loadEnv } from 'vite';
+const env = loadEnv('test', process.cwd(), '');
+Object.keys(env).forEach(key => {
+  if (key.startsWith('VITE_')) {
+    process.env[key] = env[key];
+  }
+});
+
+// Fallback mock for Gemini API key if not in env
+if (!process.env.VITE_GEMINI_API_KEY) {
+  process.env.API_KEY = 'test-gemini-api-key';
+  process.env.VITE_GEMINI_API_KEY = 'test-gemini-api-key';
+}
 
 // Cleanup after each test
 afterEach(() => {

@@ -183,6 +183,57 @@ export async function getBusinessClaims(businessId: string): Promise<LeadClaim[]
 }
 
 /**
+ * Get all claimed leads for a specific business (for Acquired Leads Dashboard)
+ */
+export async function getClaimedLeadsForBusiness(businessId: string): Promise<LeadClaim[]> {
+  try {
+    // Try Firestore first
+    try {
+      const q = query(collection(db, LEADS_COLLECTION), where('businessId', '==', businessId));
+      const snapshot = await getDocs(q);
+      const claims = snapshot.docs.map(doc => doc.data() as LeadClaim);
+      
+      if (claims.length > 0) {
+        console.log(`[LeadClaims] Retrieved ${claims.length} claimed leads from Firestore for business ${businessId}`);
+        return claims;
+      }
+    } catch (firebaseErr) {
+      console.warn('[LeadClaims] Could not fetch from Firestore, using localStorage:', firebaseErr);
+    }
+
+    // Fallback to localStorage cache
+    const cache = JSON.parse(localStorage.getItem(LEAD_VISIBILITY_CACHE) || '{}');
+    const claims: LeadClaim[] = [];
+
+    for (const [leadId, visibility] of Object.entries(cache)) {
+      const vis = visibility as any;
+      if (vis.isClaimed && vis.claimedBy === businessId) {
+        // Reconstruct LeadClaim from cache
+        claims.push({
+          id: `${businessId}_${leadId}`,
+          leadId,
+          businessId,
+          businessName: vis.businessName || 'Unknown',
+          claimedAt: vis.claimedAt || new Date().toISOString(),
+          claimedBy: vis.claimedByEmail || 'unknown@example.com',
+          paymentStatus: 'free',
+          expiresAt: vis.expiresAt || new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
+        });
+      }
+    }
+
+    if (claims.length > 0) {
+      console.log(`[LeadClaims] Retrieved ${claims.length} claimed leads from localStorage cache`);
+    }
+
+    return claims;
+  } catch (error) {
+    console.error('[LeadClaims] Error fetching claimed leads for business:', error);
+    return [];
+  }
+}
+
+/**
  * Clear visibility cache
  */
 export function clearVisibilityCache() {

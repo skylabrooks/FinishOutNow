@@ -47,7 +47,14 @@ export const fetchDallasPermits = async (): Promise<Permit[]> => {
       // Add authentication if credentials are available
       const headers: Record<string, string> = { 'Accept': 'application/json' };
       const apiKeyId = import.meta.env.VITE_DALLAS_API_KEY_ID;
-      if (apiKeyId) {
+      const apiKeySecret = import.meta.env.VITE_DALLAS_API_KEY_SECRET;
+      
+      if (apiKeyId && apiKeySecret) {
+        // Use HTTP Basic Auth for Dallas Socrata API
+        const credentials = btoa(`${apiKeyId}:${apiKeySecret}`);
+        headers['Authorization'] = `Basic ${credentials}`;
+      } else if (apiKeyId) {
+        // Fallback to X-App-Token if only key ID available
         headers['X-App-Token'] = apiKeyId;
       }
 

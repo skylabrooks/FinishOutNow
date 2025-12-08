@@ -1,5 +1,5 @@
 # 02 - FinishOutNow Implementation Summary
-**Status: Phase 1-3 COMPLETE** | **Date: December 6, 2025**
+**Status: Phase 1-4 COMPLETE** | **Date: December 7, 2025**
 
 ---
 
@@ -59,6 +59,23 @@
    - ✅ **Trend Visualization** - Line chart of recent scoring patterns
    - ✅ **Key Insights** - Automated summary of highest-scoring permit types/cities
 
+### **Phase 4: Lead Management & Pipeline Tracking** 🆕 (December 7, 2025)
+8. **Lead Claiming & Removal** - Board management system
+   - ✅ **Claim & Remove** - Lead claimed removes from public dashboard for other businesses
+   - ✅ **Manual Removal** - "Remove from Board" button in Analysis Modal
+   - ✅ **Firestore Sync** - Persistent storage of claimed leads with offline fallback
+   - ✅ **CLAIMED Badge** - Visual indicator on claimed lead cards
+   - ✅ **Lead Expiration** - 30-day expiration window for claims
+
+9. **Acquired Leads Dashboard** - Complete pipeline management
+   - ✅ **Central Hub** - View all claimed leads in one place
+   - ✅ **Stats Cards** - Total claims, active, qualified, won, total value
+   - ✅ **Filtering** - By status (All, Active, Contacted, Qualified, Won, Lost)
+   - ✅ **Sorting** - By date, value, or urgency
+   - ✅ **CSV Export** - Download entire portfolio for CRM sync
+   - ✅ **Quick Actions** - Email, Call, Schedule, Delete buttons
+   - ✅ **Responsive UI** - Sliding panel from right side, works on mobile
+
 ---
 
 ## 🔧 **Key Fixes Applied**
@@ -72,6 +89,7 @@
 | Chart sizing warning | Added explicit height + margin | ✅ Fixed |
 | Recharts width/height | Added minWidth/minHeight | ✅ Fixed |
 | Email CORS error | Changed to button click handler | ✅ Fixed |
+| AnalysisModal undefined value | Added safety check for estimatedValue | ✅ Fixed |
 
 ---
 
@@ -87,6 +105,8 @@
 - ✅ Claim & Contact (mailto: generator)
 - ✅ Add to Calendar (.ics file download)
 - ✅ Export CSV with full enriched data
+- ✅ Lead claiming with Firestore integration
+- ✅ Acquired leads dashboard with filtering/sorting/export
 - ✅ System Diagnostics panel (all tests pass except expected API failures)
 
 ### **Known Limitations**

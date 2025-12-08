@@ -9,12 +9,13 @@ import SettingsModal from './components/SettingsModal';
 import DiagnosticPanel from './components/DiagnosticPanel';
 import PermitMap from './components/PermitMap';
 import LeadClaimModal from './components/LeadClaimModal';
+import AcquiredLeadsDashboard from './components/AcquiredLeadsDashboard';
 import PermitCardWithVisibility from './components/PermitCardWithVisibility';
 import ScoringAnalytics from './components/ScoringAnalytics';
 import { ErrorBoundary } from './components/ErrorBoundary';
 import { AuthProvider, useAuth } from './services/AuthContext';
 import { registerUser } from './services/firebase';
-import { LayoutDashboard, Map as MapIcon, FileText, Settings, Search, Loader2, Sparkles, AlertTriangle, ArrowUpDown, Calendar, DollarSign, Hammer, FileCheck, Shield, Monitor, PenTool, Download, PlayCircle, Zap, RefreshCw, Radio, User, CheckCircle } from 'lucide-react';
+import { LayoutDashboard, Map as MapIcon, FileText, Settings, Search, Loader2, Sparkles, AlertTriangle, ArrowUpDown, Calendar, DollarSign, Hammer, FileCheck, Shield, Monitor, PenTool, Download, PlayCircle, Zap, RefreshCw, Radio, User, CheckCircle, Archive } from 'lucide-react';
 
 // Default Profile for Demo
 const DEFAULT_PROFILE: CompanyProfile = {
@@ -63,6 +64,7 @@ const AppContent: React.FC = () => {
   const [viewMode, setViewMode] = useState<'list' | 'map' | 'analytics'>('list');
   const [isBatchScanning, setIsBatchScanning] = useState(false);
   const [isRefreshing, setIsRefreshing] = useState(false);
+  const [showAcquiredLeads, setShowAcquiredLeads] = useState(false);
   
   // Sorting state
   const [sortKey, setSortKey] = useState<'appliedDate' | 'valuation' | 'city' | 'confidence'>('appliedDate');
@@ -155,9 +157,19 @@ const AppContent: React.FC = () => {
   };
 
   const handleLeadClaimed = async () => {
-    // Refresh the permit to update claim status
+    // Remove the claimed lead from the dashboard
     if (selectedLeadForClaim) {
-      setPermits(permits.map(p => p.id === selectedLeadForClaim.id ? selectedLeadForClaim : p));
+      setPermits(permits.filter(p => p.id !== selectedLeadForClaim.id));
+      setSelectedPermit(null);
+      setShowClaimModal(false);
+    }
+  };
+
+  const handleRemoveClaimedLead = () => {
+    // Allow user to manually remove a claimed lead from the board
+    if (selectedPermit) {
+      setPermits(permits.filter(p => p.id !== selectedPermit.id));
+      setSelectedPermit(null);
     }
   };
 
@@ -320,6 +332,13 @@ const AppContent: React.FC = () => {
                      <span className="text-xs font-medium">Batch Processing...</span>
                  </div>
              )}
+            <button 
+                onClick={() => setShowAcquiredLeads(true)}
+                className="p-2 text-slate-400 hover:text-white hover:bg-slate-800 rounded-lg transition-all"
+                title="View acquired leads"
+            >
+              <Archive size={20} />
+            </button>
             <button 
                 onClick={() => setIsSettingsOpen(true)}
                 className="p-2 text-slate-400 hover:text-white hover:bg-slate-800 rounded-lg transition-all"
@@ -492,6 +511,7 @@ const AppContent: React.FC = () => {
         permit={selectedPermit} 
         onClose={() => setSelectedPermit(null)}
         companyProfile={companyProfile}
+        onRemoveClaimed={handleRemoveClaimedLead}
       />
 
       {showClaimModal && selectedLeadForClaim && (
@@ -519,6 +539,14 @@ const AppContent: React.FC = () => {
       {isDiagnosticsOpen && (
           <DiagnosticPanel onClose={() => setIsDiagnosticsOpen(false)} />
       )}
+
+      <AcquiredLeadsDashboard
+        businessId={user?.uid || "demo-business"}
+        isOpen={showAcquiredLeads}
+        onClose={() => setShowAcquiredLeads(false)}
+        permits={permits}
+        companyProfile={companyProfile}
+      />
 
     </div>
   );

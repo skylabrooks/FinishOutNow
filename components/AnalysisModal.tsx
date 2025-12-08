@@ -7,9 +7,10 @@ interface AnalysisModalProps {
   permit: EnrichedPermit | null;
   onClose: () => void;
   companyProfile?: CompanyProfile;
+  onRemoveClaimed?: () => void;
 }
 
-const AnalysisModal: React.FC<AnalysisModalProps> = ({ permit, onClose, companyProfile }) => {
+const AnalysisModal: React.FC<AnalysisModalProps> = ({ permit, onClose, companyProfile, onRemoveClaimed }) => {
   // Handle ESC key to close modal - only when modal is visible
   // Use capture phase to ensure this runs before App.tsx handler
   React.useEffect(() => {
@@ -251,7 +252,7 @@ const AnalysisModal: React.FC<AnalysisModalProps> = ({ permit, onClose, companyP
              <div className="mb-6">
                 <h3 className="text-slate-400 text-xs uppercase tracking-wider font-semibold mb-2">Deal Economics</h3>
                 <div className="flex items-baseline gap-1">
-                    <span className="text-3xl font-bold text-white">${aiAnalysis.estimatedValue.toLocaleString()}</span>
+                    <span className="text-3xl font-bold text-white">${(aiAnalysis.estimatedValue || 0).toLocaleString()}</span>
                     <span className="text-sm text-slate-500">est. contract value</span>
                 </div>
                 <div className="w-full bg-slate-700 h-1.5 mt-3 rounded-full overflow-hidden">
@@ -306,6 +307,19 @@ const AnalysisModal: React.FC<AnalysisModalProps> = ({ permit, onClose, companyP
                       <Calendar size={16} />
                       Add to Calendar
                   </button>
+                  {onRemoveClaimed && (
+                    <button
+                        onClick={() => {
+                          onRemoveClaimed();
+                          onClose();
+                        }}
+                        className="w-full bg-red-600/20 hover:bg-red-600/30 text-red-400 border border-red-600/50 py-2.5 rounded-lg font-medium transition-all flex items-center justify-center gap-2"
+                        title="Remove this claimed lead from the board"
+                    >
+                        <X size={16} />
+                        Remove from Board
+                    </button>
+                  )}
                 </div>
             </div>
           </div>

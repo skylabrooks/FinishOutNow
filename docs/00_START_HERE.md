@@ -66,67 +66,34 @@ This guide shows you the exact order to read all documentation files to understa
 #### **07 - [Task #6 Complete: Backend Proxy Implementation](07_TASK_6_SUMMARY.md)**
 - **Implementation summary**
 - Files created and updated
-- Architecture overview
+# 00 - START HERE: Complete Developer Reading Guide
+
+**Welcome to FinishOutNow!**  
+This guide shows you the exact order to read all documentation files to understand the complete application.
+
 - How it works (step-by-step flow)
 - Configuration reference
 - **Time:** 5 minutes
 
 ---
-
-### **Phase 4: Setup & Operation (15 minutes)**
-
-#### **08 - [Backend Proxy Setup Guide](08_BACKEND_SETUP.md)**
-- **Complete setup instructions**
-- What was added and why
 - Step-by-step development setup
 - Testing procedures (curl commands)
-- Production deployment guide
-- Troubleshooting (5+ common issues)
-- **Time:** 10 minutes
-
-#### **09 - [Quick Reference: Backend Proxy Setup](09_BACKEND_QUICK_REFERENCE.md)**
-- **Quick commands and references**
+ - Phase 3: Lead Claiming & Acquired Leads Dashboard
 - Start development (3 options)
-- Testing checklist
 - What changed (files)
 - API endpoints
 - Common issues
 - **Time:** 5 minutes (reference)
-
----
-
-### **Phase 5: Advanced Configuration (10 minutes)**
-
-#### **10 - [Model Context Protocol (MCP) Instructions](10_MCP_INSTRUCTIONS.md)**
-- **Optional: MCP servers available**
-- 5 MCP servers configured
 - How to use each one
 - Best practices for AI agents
-- Advanced usage patterns
-- **Time:** 5 minutes (reference/optional)
-
-#### **11 - [Firebase Credentials & Configuration](11_FIREBASE_CREDENTIALS.md)**
-- **Firebase setup** (reference)
 - API credentials (already configured)
-- Project ID and auth domain
 - Note: Not yet integrated into main app
 - **Time:** 2 minutes (reference)
 
 ---
-
-## 🎯 Reading Paths by Role
-
-### For New Developers (First Time Setup)
-**Time: 40 minutes**
 1. Read: **01** - Project overview
 2. Read: **02** - What was accomplished
-3. Read: **03** - Current status
-4. Read: **09** - Quick reference
-5. Run: `npm run dev:full`
-6. Explore: http://localhost:3000
-
 **Result:** You can run the app and understand the basic architecture.
-
 ---
 
 ### For Backend Engineers

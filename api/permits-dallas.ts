@@ -79,10 +79,14 @@ export default async function handler(req: any, res: any) {
     // Add Socrata API credentials if available (increases rate limits)
     const apiKeyId = process.env.VITE_DALLAS_API_KEY_ID;
     const apiKeySecret = process.env.VITE_DALLAS_API_KEY_SECRET;
+    
     if (apiKeyId && apiKeySecret) {
+      // Use HTTP Basic Auth for Dallas Socrata API (keyId:secret)
+      const credentials = Buffer.from(`${apiKeyId}:${apiKeySecret}`).toString('base64');
+      headers['Authorization'] = `Basic ${credentials}`;
+    } else if (apiKeyId) {
+      // Fallback to X-App-Token if only key ID available
       headers['X-App-Token'] = apiKeyId;
-      // Note: For keyId/secret pairs, typically only the keyId is used as X-App-Token
-      // The secret is for additional authentication if needed
     }
 
     const response = await fetch(`${DALLAS_API_ENDPOINT}?${query}`, {

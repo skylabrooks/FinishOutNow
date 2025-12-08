@@ -138,10 +138,14 @@ export const leadManager = {
     // Attempt to geocode any permits that don't already include coordinates.
     // This runs in the client (leadManager is used by the browser app). We cache results
     // in `localStorage` under `finishoutnow_geocache_v1` to avoid repeated network calls.
-    try {
-      await geocodePermits(sortedLeads);
-    } catch (err) {
-      console.warn('LeadManager: Geocoding step failed or was skipped', err);
+    // Skip geocoding in test environments (NODE_ENV=test) to speed up tests
+    const isTestEnv = typeof process !== 'undefined' && process.env.NODE_ENV === 'test';
+    if (!isTestEnv) {
+      try {
+        await geocodePermits(sortedLeads);
+      } catch (err) {
+        console.warn('LeadManager: Geocoding step failed or was skipped', err);
+      }
     }
 
     return sortedLeads;

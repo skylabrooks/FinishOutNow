@@ -70,6 +70,13 @@ export default function PermitCardWithVisibility({
         </div>
       )}
 
+      {/* Claimed Badge if Claimed */}
+      {!isLocked && (
+        <div className="absolute top-3 right-3 bg-emerald-600 text-white px-2 py-1 rounded flex items-center gap-1 text-xs font-bold">
+          <CheckCircle size={12} /> CLAIMED
+        </div>
+      )}
+
       <div className="p-5 flex flex-col md:flex-row gap-6">
         {/* Left: Metadata */}
         <div className="flex-1">
