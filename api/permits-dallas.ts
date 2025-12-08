@@ -70,12 +70,23 @@ export default async function handler(req: any, res: any) {
       } as DallasProxyResponse);
     }
 
-    // Fetch from Dallas API
+    // Fetch from Dallas API with authentication
+    const headers: Record<string, string> = {
+      'Accept': 'application/json',
+      'User-Agent': 'FinishOutNow-Backend/1.0'
+    };
+
+    // Add Socrata API credentials if available (increases rate limits)
+    const apiKeyId = process.env.VITE_DALLAS_API_KEY_ID;
+    const apiKeySecret = process.env.VITE_DALLAS_API_KEY_SECRET;
+    if (apiKeyId && apiKeySecret) {
+      headers['X-App-Token'] = apiKeyId;
+      // Note: For keyId/secret pairs, typically only the keyId is used as X-App-Token
+      // The secret is for additional authentication if needed
+    }
+
     const response = await fetch(`${DALLAS_API_ENDPOINT}?${query}`, {
-      headers: {
-        'Accept': 'application/json',
-        'User-Agent': 'FinishOutNow-Backend/1.0'
-      },
+      headers,
       timeout: 10000 // 10 second timeout
     });
 

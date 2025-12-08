@@ -88,24 +88,24 @@ const AnalysisModal: React.FC<AnalysisModalProps> = ({ permit, onClose }) => {
             <div>
               <h3 className="text-slate-400 text-xs uppercase tracking-wider font-semibold mb-3">Trade Opportunities</h3>
               <div className="space-y-2">
-                <div className={`flex items-center justify-between p-3 rounded-lg border ${aiAnalysis.tradeOpportunities.security ? 'bg-red-900/10 border-red-900/50' : 'bg-slate-800/50 border-slate-700 opacity-50'}`}>
+                <div className={`flex items-center justify-between p-3 rounded-lg border ${aiAnalysis.tradeOpportunities.securityIntegrator ? 'bg-red-900/10 border-red-900/50' : 'bg-slate-800/50 border-slate-700 opacity-50'}`}>
                     <div className="flex items-center gap-3">
-                        <div className={`p-1.5 rounded ${aiAnalysis.tradeOpportunities.security ? 'bg-red-500/20 text-red-400' : 'bg-slate-700 text-slate-500'}`}>
+                        <div className={`p-1.5 rounded ${aiAnalysis.tradeOpportunities.securityIntegrator ? 'bg-red-500/20 text-red-400' : 'bg-slate-700 text-slate-500'}`}>
                             <Shield size={16} />
                         </div>
-                        <span className={aiAnalysis.tradeOpportunities.security ? 'text-white font-medium' : 'text-slate-500'}>Security & Access</span>
+                        <span className={aiAnalysis.tradeOpportunities.securityIntegrator ? 'text-white font-medium' : 'text-slate-500'}>Security & Access</span>
                     </div>
-                    {aiAnalysis.tradeOpportunities.security && <CheckCircle size={16} className="text-emerald-400" />}
+                    {aiAnalysis.tradeOpportunities.securityIntegrator && <CheckCircle size={16} className="text-emerald-400" />}
                 </div>
 
-                <div className={`flex items-center justify-between p-3 rounded-lg border ${aiAnalysis.tradeOpportunities.lowVoltage ? 'bg-cyan-900/10 border-cyan-900/50' : 'bg-slate-800/50 border-slate-700 opacity-50'}`}>
+                <div className={`flex items-center justify-between p-3 rounded-lg border ${aiAnalysis.tradeOpportunities.lowVoltageIT ? 'bg-cyan-900/10 border-cyan-900/50' : 'bg-slate-800/50 border-slate-700 opacity-50'}`}>
                     <div className="flex items-center gap-3">
-                        <div className={`p-1.5 rounded ${aiAnalysis.tradeOpportunities.lowVoltage ? 'bg-cyan-500/20 text-cyan-400' : 'bg-slate-700 text-slate-500'}`}>
+                        <div className={`p-1.5 rounded ${aiAnalysis.tradeOpportunities.lowVoltageIT ? 'bg-cyan-500/20 text-cyan-400' : 'bg-slate-700 text-slate-500'}`}>
                             <Monitor size={16} />
                         </div>
-                        <span className={aiAnalysis.tradeOpportunities.lowVoltage ? 'text-white font-medium' : 'text-slate-500'}>Low Voltage / IT</span>
+                        <span className={aiAnalysis.tradeOpportunities.lowVoltageIT ? 'text-white font-medium' : 'text-slate-500'}>Low Voltage / IT</span>
                     </div>
-                    {aiAnalysis.tradeOpportunities.lowVoltage && <CheckCircle size={16} className="text-emerald-400" />}
+                    {aiAnalysis.tradeOpportunities.lowVoltageIT && <CheckCircle size={16} className="text-emerald-400" />}
                 </div>
 
                 <div className={`flex items-center justify-between p-3 rounded-lg border ${aiAnalysis.tradeOpportunities.signage ? 'bg-amber-900/10 border-amber-900/50' : 'bg-slate-800/50 border-slate-700 opacity-50'}`}>
@@ -128,7 +128,7 @@ const AnalysisModal: React.FC<AnalysisModalProps> = ({ permit, onClose }) => {
              <div className="mb-6">
                 <h3 className="text-slate-400 text-xs uppercase tracking-wider font-semibold mb-2">Deal Economics</h3>
                 <div className="flex items-baseline gap-1">
-                    <span className="text-3xl font-bold text-white">${aiAnalysis.estimatedOpportunityValue.toLocaleString()}</span>
+                    <span className="text-3xl font-bold text-white">${aiAnalysis.estimatedValue.toLocaleString()}</span>
                     <span className="text-sm text-slate-500">est. contract value</span>
                 </div>
                 <div className="w-full bg-slate-700 h-1.5 mt-3 rounded-full overflow-hidden">

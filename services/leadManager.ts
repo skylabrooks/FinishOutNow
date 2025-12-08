@@ -170,5 +170,16 @@ export const leadManager = {
         ...permit,
         enrichmentData: data || { verified: false }
     };
+  },
+
+  /**
+   * Enriches multiple permits with Texas Comptroller entity data.
+   * Used by tests and batch operations.
+   */
+  enrichLeads: async (permits: EnrichedPermit[]): Promise<EnrichedPermit[]> => {
+    const enriched = await Promise.all(
+      permits.map(permit => leadManager.enrichPermit(permit))
+    );
+    return enriched;
   }
 };

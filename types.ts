@@ -25,9 +25,9 @@ export enum LeadCategory {
 }
 
 export interface TradeOpportunities {
-  security: boolean;
+  securityIntegrator: boolean;
   signage: boolean;
-  lowVoltage: boolean;
+  lowVoltageIT: boolean;
 }
 
 export interface ExtractedEntities {
@@ -57,7 +57,7 @@ export interface AIAnalysisResult {
   category: LeadCategory; // Primary category for sorting/display
   salesPitch: string;
   urgency: 'High' | 'Medium' | 'Low';
-  estimatedOpportunityValue: number;
+  estimatedValue: number;
 }
 
 export interface EnrichedPermit extends Permit {

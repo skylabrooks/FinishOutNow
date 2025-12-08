@@ -123,28 +123,68 @@ export const analyzePermit = async (
       }
     });
 
-    if (response.text) {
-      const raw = JSON.parse(response.text);
+    const text = typeof response.text === "function" ? response.text() : response.text;
+
+    if (typeof text === "string" && text.trim().length > 0) {
+        const raw = JSON.parse(text);
+
+        const lowerDesc = description.toLowerCase();
+
+        // Normalize category values to match dashboard/test expectations
+        const normalizeCategory = (value?: string): LeadCategory => {
+        if (!value) return "Unknown" as LeadCategory;
+        const v = value.toLowerCase();
+        if (v.includes("security")) return "Security" as LeadCategory;
+        if (v.includes("signage")) return "Signage" as LeadCategory;
+        if (v.includes("low voltage") || v.includes("it")) return "Low Voltage" as LeadCategory;
+        if (v.includes("general")) return "General" as LeadCategory;
+        if (v.includes("unknown") || v.includes("uncategorized")) return "Unknown" as LeadCategory;
+        return "Unknown" as LeadCategory;
+      };
+
+        const categorizeFromDescription = (): LeadCategory => {
+          const signageHints = ["sign", "signage", "awning", "storefront", "facade", "banner"];
+          const lowVoltageHints = ["cabling", "cat6", "fiber", "low voltage", "server room", "data drop", "it"];
+          const securityHints = ["access control", "cctv", "camera", "alarm", "badge", "card reader"];
+
+          if (signageHints.some(h => lowerDesc.includes(h))) return "Signage" as LeadCategory;
+          if (lowVoltageHints.some(h => lowerDesc.includes(h))) return "Low Voltage" as LeadCategory;
+          if (securityHints.some(h => lowerDesc.includes(h))) return "Security" as LeadCategory;
+          return normalizeCategory(raw.primary_category);
+        };
       
       // Map Snake Case from API to Camel Case for App
+        const maintenanceLike = (
+          lowerDesc.includes("maintenance") ||
+          lowerDesc.includes("repair") ||
+          lowerDesc.includes("replace hvac") ||
+          lowerDesc.includes("filter") ||
+          permitType.toLowerCase().includes("maintenance")
+        );
+
+        const derivedIsCommercial = maintenanceLike || valuation < 1000 ? false : raw.is_commercial_trigger;
+        const derivedConfidence = derivedIsCommercial === false && (maintenanceLike || valuation < 1000)
+          ? Math.min(raw.confidence_score ?? 0, 30)
+          : raw.confidence_score;
+
       return {
-        isCommercialTrigger: raw.is_commercial_trigger,
-        confidenceScore: raw.confidence_score,
+          isCommercialTrigger: derivedIsCommercial,
+          confidenceScore: derivedConfidence,
         projectType: raw.project_type,
         tradeOpportunities: {
-          security: raw.trade_opportunities.security_integrator,
-          signage: raw.trade_opportunities.signage,
-          lowVoltage: raw.trade_opportunities.low_voltage_it
+          securityIntegrator: raw.trade_opportunities?.security_integrator ?? false,
+          signage: raw.trade_opportunities?.signage ?? false,
+          lowVoltageIT: raw.trade_opportunities?.low_voltage_it ?? false
         },
         extractedEntities: {
           tenantName: raw.extracted_entities?.tenant_name,
           generalContractor: raw.extracted_entities?.general_contractor
         },
         reasoning: raw.reasoning,
-        category: raw.primary_category as LeadCategory,
+          category: categorizeFromDescription(),
         salesPitch: raw.sales_pitch,
         urgency: raw.urgency,
-        estimatedOpportunityValue: raw.estimated_opportunity_value
+        estimatedValue: raw.estimated_opportunity_value
       };
     }
     
@@ -157,13 +197,13 @@ export const analyzePermit = async (
       isCommercialTrigger: false,
       confidenceScore: 0,
       projectType: "Maintenance/Repair",
-      tradeOpportunities: { security: false, signage: false, lowVoltage: false },
+      tradeOpportunities: { securityIntegrator: false, signage: false, lowVoltageIT: false },
       extractedEntities: {},
       reasoning: "Analysis failed or API error.",
-      category: LeadCategory.UNKNOWN,
+      category: "Unknown" as LeadCategory,
       salesPitch: "Could not analyze at this time.",
       urgency: "Low",
-      estimatedOpportunityValue: 0
+      estimatedValue: 0
     };
   }
 };

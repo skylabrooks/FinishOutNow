@@ -2,14 +2,16 @@
 import { Permit } from '../../types';
 
 interface FWRawPermit {
-  record_id: string;
-  permit_type: string;
-  job_value: string;
-  address: string;
-  status_date: string;
-  description: string;
-  applicant_name: string;
-  status: string;
+  attributes: {
+    Unique_ID?: string;
+    Permit_No?: string;
+    Permit_Type?: string;
+    Permit_SubType?: string;
+    Full_Street_Address?: string;
+    Zip_Code?: string;
+    B1_WORK_DESC?: string;
+    [key: string]: any;
+  };
 }
 
 interface FWProxyResponse {
@@ -22,7 +24,7 @@ interface FWProxyResponse {
 // Use API proxy endpoint (resolves CORS issues)
 // Falls back to direct API if proxy is unavailable
 const PROXY_ENDPOINT = '/api/permits-fortworth';
-const DIRECT_ENDPOINT = 'https://data.fortworthtexas.gov/resource/qy5k-jz7m.json';
+const DIRECT_ENDPOINT = 'https://services5.arcgis.com/3ddLCBXe1bRt7mzj/arcgis/rest/services/CFW_Open_Data_Development_Permits_View/FeatureServer/0/query';
 
 export const fetchFortWorthPermits = async (): Promise<Permit[]> => {
   try {
@@ -37,11 +39,13 @@ export const fetchFortWorthPermits = async (): Promise<Permit[]> => {
         console.log(`[Fort Worth] Fetched ${data.length} permits via proxy (${proxyData.cached ? 'cached' : 'fresh'})`);
       }
     } else {
-      // Fallback to direct API (development/bypass)
-      console.warn('[Fort Worth] Proxy unavailable, trying direct API...');
+      // Fallback to direct ArcGIS API (development/bypass)
+      console.warn('[Fort Worth] Proxy unavailable, trying direct ArcGIS API...');
       const params = new URLSearchParams({
-        '$limit': '20',
-        '$order': 'status_date DESC'
+        'outFields': '*',
+        'where': '1=1',
+        'resultRecordCount': '20',
+        'f': 'json'
       });
 
       response = await fetch(`${DIRECT_ENDPOINT}?${params.toString()}`);
@@ -50,22 +54,26 @@ export const fetchFortWorthPermits = async (): Promise<Permit[]> => {
         throw new Error(`Fort Worth API Error: ${response.statusText}`);
       }
 
-      data = await response.json();
+      const geoJsonData = await response.json();
+      data = geoJsonData.features || [];
     }
 
-    return data.map(record => ({
-      id: `FW-${record.record_id || Math.random()}`,
-      permitNumber: record.record_id || 'N/A',
-      permitType: (record.permit_type || '').includes('CO') ? 'Certificate of Occupancy' : 'Commercial Remodel',
-      address: record.address || 'Address Not Listed',
-      city: 'Fort Worth',
-      appliedDate: record.status_date ? record.status_date.split('T')[0] : new Date().toISOString().split('T')[0],
-      description: record.description || record.permit_type || 'No description',
-      applicant: (record.applicant_name && record.applicant_name !== 'null' && record.applicant_name.trim()) ? record.applicant_name.trim() : 'Unknown',
-      valuation: parseFloat(record.job_value) || 0,
-      status: record.status === 'Finaled' ? 'Issued' : 'Under Review',
-      dataSource: 'Fort Worth Open Data'
-    }));
+    return data.map(record => {
+      const attrs = record.attributes || {};
+      return {
+        id: `FW-${attrs.Unique_ID || Math.random()}`,
+        permitNumber: attrs.Permit_No || 'N/A',
+        permitType: (attrs.Permit_Type || '').toLowerCase().includes('co') ? 'Certificate of Occupancy' : 'Commercial Permit',
+        address: attrs.Full_Street_Address || 'Address Not Listed',
+        city: 'Fort Worth',
+        appliedDate: new Date().toISOString().split('T')[0],
+        description: attrs.B1_WORK_DESC || attrs.Permit_Type || 'No description',
+        applicant: 'Unknown',
+        valuation: 0,
+        status: 'Under Review',
+        dataSource: 'Fort Worth Open Data (ArcGIS)'
+      };
+    });
 
   } catch (error) {
     console.warn('Failed to fetch Fort Worth permits:', error);

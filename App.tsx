@@ -241,7 +241,7 @@ const AppContent: React.FC = () => {
             p.aiAnalysis?.isCommercialTrigger ? "Yes" : "No",
             p.aiAnalysis?.confidenceScore || 0,
             p.aiAnalysis?.urgency || "Unknown",
-            p.aiAnalysis?.estimatedOpportunityValue || 0,
+            p.aiAnalysis?.estimatedValue || 0,
             `"${p.aiAnalysis?.salesPitch?.replace(/"/g, '""') || ''}"`, // Escape quotes
             p.enrichmentData?.verified ? "Yes" : "No",
             p.enrichmentData?.taxpayerName || "N/A",
@@ -273,7 +273,7 @@ const AppContent: React.FC = () => {
 
   // Stats Calculation
   const stats = {
-    totalValue: permits.reduce((acc, p) => acc + (p.aiAnalysis?.estimatedOpportunityValue || 0), 0),
+    totalValue: permits.reduce((acc, p) => acc + (p.aiAnalysis?.estimatedValue || 0), 0),
     activeLeads: permits.filter(p => p.aiAnalysis).length,
     highPriority: permits.filter(p => p.aiAnalysis?.urgency === 'High').length,
     avgConfidence: Math.round(permits.reduce((acc, p) => acc + (p.aiAnalysis?.confidenceScore || 0), 0) / (permits.filter(p => p.aiAnalysis).length || 1))

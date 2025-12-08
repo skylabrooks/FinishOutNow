@@ -44,7 +44,14 @@ export const fetchDallasPermits = async (): Promise<Permit[]> => {
         '$order': 'issue_date DESC'
       });
 
-      response = await fetch(`${DIRECT_ENDPOINT}?${params.toString()}`);
+      // Add authentication if credentials are available
+      const headers: Record<string, string> = { 'Accept': 'application/json' };
+      const apiKeyId = import.meta.env.VITE_DALLAS_API_KEY_ID;
+      if (apiKeyId) {
+        headers['X-App-Token'] = apiKeyId;
+      }
+
+      response = await fetch(`${DIRECT_ENDPOINT}?${params.toString()}`, { headers });
       
       if (!response.ok) {
         throw new Error(`Dallas API Error: ${response.statusText}`);

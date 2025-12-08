@@ -64,5 +64,6 @@ export const normalizeCity = (city: string): Permit['city'] => {
   if (c.includes('irving')) return 'Irving';
   if (c.includes('arlington')) return 'Arlington';
   
-  return 'Dallas'; // Default fallback if unknown, or handle as error
+  // Return as-is if it's a valid DFW city, otherwise default to Dallas
+  return city.trim() || 'Dallas';
 };

@@ -41,7 +41,7 @@ describe('Data Pipeline - Lead Manager', () => {
   it('should normalize city names', async () => {
     const leads = await leadManager.fetchAllLeads();
     
-    const validCities = ['Dallas', 'Fort Worth', 'Arlington', 'Plano', 'Irving'];
+    const validCities = ['Dallas', 'Fort Worth', 'Arlington', 'Plano', 'Irving', 'Frisco'];
     
     leads.forEach(lead => {
       expect(validCities).toContain(lead.city);
@@ -120,12 +120,14 @@ describe('Data Pipeline - Enrichment', () => {
     const mockPermit: Permit = {
       id: 'TEST-001',
       city: 'Dallas',
-      permitType: 'Commercial',
+      permitNumber: 'TEST-001',
+      permitType: 'Commercial Remodel',
       address: '123 Main St',
       appliedDate: '2025-01-01',
       description: 'Test permit',
       valuation: 50000,
       applicant: 'Test Company LLC',
+      status: 'Issued',
       dataSource: 'Test'
     };
 
@@ -140,12 +142,14 @@ describe('Data Pipeline - Enrichment', () => {
     const mockPermit: Permit = {
       id: 'TEST-002',
       city: 'Dallas',
-      permitType: 'Commercial',
+      permitNumber: 'TEST-002',
+      permitType: 'Commercial Remodel',
       address: '456 Test Ave',
       appliedDate: '2025-01-01',
       description: 'Test permit',
       valuation: 25000,
       applicant: 'Invalid Company Name That Does Not Exist',
+      status: 'Issued',
       dataSource: 'Test'
     };
 

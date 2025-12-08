@@ -1,21 +1,23 @@
 /**
- * API Proxy: Fort Worth Open Data
+ * API Proxy: Fort Worth Open Data (ArcGIS FeatureServer)
  * 
- * This endpoint proxies requests to Fort Worth Open Data API,
+ * This endpoint proxies requests to Fort Worth's ArcGIS FeatureServer,
  * resolving CORS issues and enabling server-side caching.
  * 
  * Usage: GET /api/permits-fortworth?limit=20&offset=0
  */
 
 interface FWRawPermit {
-  record_id: string;
-  permit_type: string;
-  job_value: string;
-  address: string;
-  status_date: string;
-  description: string;
-  applicant_name: string;
-  status: string;
+  attributes: {
+    Unique_ID?: string;
+    Permit_No?: string;
+    Permit_Type?: string;
+    Permit_SubType?: string;
+    Full_Street_Address?: string;
+    Zip_Code?: string;
+    B1_WORK_DESC?: string;
+    [key: string]: any;
+  };
 }
 
 interface FWProxyResponse {
@@ -26,7 +28,7 @@ interface FWProxyResponse {
   timestamp: number;
 }
 
-const FW_API_ENDPOINT = 'https://data.fortworthtexas.gov/resource/qy5k-jz7m.json';
+const FW_API_ENDPOINT = 'https://services5.arcgis.com/3ddLCBXe1bRt7mzj/arcgis/rest/services/CFW_Open_Data_Development_Permits_View/FeatureServer/0/query';
 
 // Simple in-memory cache (replace with Redis in production)
 const cache = new Map<string, { data: any; timestamp: number }>();
@@ -49,13 +51,17 @@ export default async function handler(req: any, res: any) {
     const limit = req.query.limit || '20';
     const offset = req.query.offset || '0';
 
-    // Build SoQL query
-    const query = [
-      '$where=(permit_type like \'%Commercial%\' OR permit_type like \'%Remodel%\') AND status != \'Withdrawn\'',
-      '$order=status_date DESC',
-      `$limit=${limit}`,
-      `$offset=${offset}`
-    ].join('&');
+    // Build ArcGIS query parameters
+    const resultOffset = parseInt(offset) || 0;
+    const resultRecordCount = parseInt(limit) || 20;
+
+    const params = new URLSearchParams({
+      'outFields': '*',
+      'where': '1=1',
+      'resultOffset': resultOffset.toString(),
+      'resultRecordCount': resultRecordCount.toString(),
+      'f': 'json'
+    });
 
     const cacheKey = getCacheKey({ limit, offset });
 
@@ -70,12 +76,14 @@ export default async function handler(req: any, res: any) {
       } as FWProxyResponse);
     }
 
-    // Fetch from Fort Worth API
-    const response = await fetch(`${FW_API_ENDPOINT}?${query}`, {
-      headers: {
-        'Accept': 'application/json',
-        'User-Agent': 'FinishOutNow-Backend/1.0'
-      },
+    // Fetch from Fort Worth ArcGIS API
+    const headers: Record<string, string> = {
+      'Accept': 'application/json',
+      'User-Agent': 'FinishOutNow-Backend/1.0'
+    };
+
+    const response = await fetch(`${FW_API_ENDPOINT}?${params.toString()}`, {
+      headers,
       timeout: 10000 // 10 second timeout
     });
 
@@ -83,7 +91,8 @@ export default async function handler(req: any, res: any) {
       throw new Error(`Fort Worth API Error: ${response.statusText} (${response.status})`);
     }
 
-    const data: FWRawPermit[] = await response.json();
+    const geoData = await response.json();
+    const data: FWRawPermit[] = geoData.features || [];
 
     // Cache the result
     cache.set(cacheKey, {

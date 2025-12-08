@@ -13,6 +13,8 @@
     }
   ],
   "env": {
-    "VITE_GEMINI_API_KEY": "@vite_gemini_api_key"
+    "VITE_GEMINI_API_KEY": "@vite_gemini_api_key",
+    "VITE_DALLAS_API_KEY_ID": "@vite_dallas_api_key_id",
+    "VITE_DALLAS_API_KEY_SECRET": "@vite_dallas_api_key_secret"
   }
 }
