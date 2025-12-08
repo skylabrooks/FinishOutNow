@@ -30,6 +30,55 @@ const DEFAULT_PROFILE: CompanyProfile = {
 const STORAGE_KEY_PERMITS = 'finishOutNow_permits_v1';
 const STORAGE_KEY_PROFILE = 'finishOutNow_profile_v1';
 
+// ---------------------------------------------
+// Subscription Plan Definitions
+// This MVP adds basic plan-based feature gating.
+// A production implementation would fetch the user's
+// active plan from the backend (e.g. Stripe) and
+// compute feature access dynamically.  For now,
+// we use a constant to simulate three tiers:
+// 'starter', 'pro' and 'elite'.
+type Plan = 'starter' | 'pro' | 'elite';
+
+// TODO: Replace this with real billing integration.
+// This constant defines the current user's plan.
+const USER_PLAN: Plan = 'starter';
+
+// Map of features allowed per plan.  Each plan
+// inherits from the previous tier.
+const FEATURE_MAP: Record<Plan, string[]> = {
+  starter: [
+    'aiAnalysis'  // Only AI analysis of single permits
+  ],
+  pro: [
+    'aiAnalysis',
+    'map',
+    'analytics',
+    'csv',
+    'batch',
+    'claim'
+  ],
+  elite: [
+    'aiAnalysis',
+    'map',
+    'analytics',
+    'csv',
+    'batch',
+    'claim',
+    'multiCity',
+    'teams'
+  ]
+};
+
+/**
+ * Returns true if the current plan allows the given feature.
+ * @param feature The feature key to check.
+ */
+const planAllowsFeature = (feature: string): boolean => {
+  const planFeatures = FEATURE_MAP[USER_PLAN];
+  return planFeatures.includes(feature);
+};
+
 const AppContent: React.FC = () => {
   // Auth Context
   const { user, login, isLoading: authLoading } = useAuth();
@@ -309,6 +358,13 @@ const AppContent: React.FC = () => {
         return 0;
     });
 
+  // Determine which view is allowed based on the current subscription plan.
+  const effectiveView: typeof viewMode = (
+    (!planAllowsFeature('map') && viewMode === 'map') ? 'list' :
+    (!planAllowsFeature('analytics') && viewMode === 'analytics') ? 'list' :
+    viewMode
+  );
+
   return (
     <div className="min-h-screen bg-slate-950 text-slate-200 font-sans selection:bg-blue-500/30">
       
@@ -332,13 +388,16 @@ const AppContent: React.FC = () => {
                      <span className="text-xs font-medium">Batch Processing...</span>
                  </div>
              )}
-            <button 
-                onClick={() => setShowAcquiredLeads(true)}
-                className="p-2 text-slate-400 hover:text-white hover:bg-slate-800 rounded-lg transition-all"
-                title="View acquired leads"
-            >
-              <Archive size={20} />
-            </button>
+            {/* View acquired leads only on plans that include claiming leads */}
+            {planAllowsFeature('claim') && (
+              <button 
+                  onClick={() => setShowAcquiredLeads(true)}
+                  className="p-2 text-slate-400 hover:text-white hover:bg-slate-800 rounded-lg transition-all"
+                  title="View acquired leads"
+              >
+                <Archive size={20} />
+              </button>
+            )}
             <button 
                 onClick={() => setIsSettingsOpen(true)}
                 className="p-2 text-slate-400 hover:text-white hover:bg-slate-800 rounded-lg transition-all"
@@ -392,22 +451,25 @@ const AppContent: React.FC = () => {
                     <RefreshCw size={18} className={isRefreshing ? "animate-spin" : ""} />
                 </button>
                 
-                 <button 
+                <button 
                     onClick={handleBatchScan}
-                    disabled={isBatchScanning}
+                    disabled={isBatchScanning || !planAllowsFeature('batch')}
                     className="flex items-center gap-2 px-4 py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg font-medium text-sm transition-all shadow-lg shadow-indigo-900/20 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
                     <Sparkles size={16} />
-                    Scan Page
+                    {planAllowsFeature('batch') ? 'Optimize Leads' : 'Upgrade Plan'}
                 </button>
 
-                <button 
-                    onClick={handleDownloadCSV}
-                    className="flex items-center gap-2 px-4 py-2.5 bg-slate-800 hover:bg-slate-700 text-white border border-slate-700 rounded-lg font-medium text-sm transition-all"
-                >
-                    <Download size={16} />
-                    Export CSV
-                </button>
+                {/* CSV export is only available on Pro plans and above */}
+                {planAllowsFeature('csv') && (
+                  <button 
+                      onClick={handleDownloadCSV}
+                      className="flex items-center gap-2 px-4 py-2.5 bg-slate-800 hover:bg-slate-700 text-white border border-slate-700 rounded-lg font-medium text-sm transition-all"
+                  >
+                      <Download size={16} />
+                      Export CSV
+                  </button>
+                )}
             </div>
         </div>
 
@@ -423,20 +485,26 @@ const AppContent: React.FC = () => {
                     <FileText size={18} />
                     <span className="font-medium">Permit Feed</span>
                 </button>
-                <button 
-                    onClick={() => setViewMode('map')}
-                    className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all ${viewMode === 'map' ? 'bg-blue-600 text-white shadow-lg shadow-blue-900/20' : 'text-slate-400 hover:bg-slate-800/50'}`}
-                >
-                    <MapIcon size={18} />
-                    <span className="font-medium">Map View</span>
-                </button>
-                <button 
-                    onClick={() => setViewMode('analytics')}
-                    className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all ${viewMode === 'analytics' ? 'bg-blue-600 text-white shadow-lg shadow-blue-900/20' : 'text-slate-400 hover:bg-slate-800/50'}`}
-                >
-                    <Zap size={18} />
-                    <span className="font-medium">Analytics</span>
-                </button>
+                {/* Map view is only available for Pro plans and above */}
+                {planAllowsFeature('map') && (
+                  <button 
+                      onClick={() => setViewMode('map')}
+                      className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all ${viewMode === 'map' ? 'bg-blue-600 text-white shadow-lg shadow-blue-900/20' : 'text-slate-400 hover:bg-slate-800/50'}`}
+                  >
+                      <MapIcon size={18} />
+                      <span className="font-medium">Map View</span>
+                  </button>
+                )}
+                {/* Analytics is only available for Pro plans and above */}
+                {planAllowsFeature('analytics') && (
+                  <button 
+                      onClick={() => setViewMode('analytics')}
+                      className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all ${viewMode === 'analytics' ? 'bg-blue-600 text-white shadow-lg shadow-blue-900/20' : 'text-slate-400 hover:bg-slate-800/50'}`}
+                  >
+                      <Zap size={18} />
+                      <span className="font-medium">Analytics</span>
+                  </button>
+                )}
                 
                 <div className="mt-8 px-4">
                     <h3 className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-4">Sort By</h3>
@@ -467,9 +535,9 @@ const AppContent: React.FC = () => {
             {/* List / Map / Analytics View */}
             <div className="lg:col-span-3 relative z-0">
                 
-                {viewMode === 'analytics' ? (
+                {effectiveView === 'analytics' ? (
                     <ScoringAnalytics permits={filteredPermits} />
-                ) : viewMode === 'map' ? (
+                ) : effectiveView === 'map' ? (
                                         <div className="relative z-0">
                                             <ErrorBoundary fallback={
                       <div className="text-center py-20 bg-slate-900/50 rounded-xl border border-slate-800 border-dashed">
@@ -540,13 +608,16 @@ const AppContent: React.FC = () => {
           <DiagnosticPanel onClose={() => setIsDiagnosticsOpen(false)} />
       )}
 
-      <AcquiredLeadsDashboard
-        businessId={user?.uid || "demo-business"}
-        isOpen={showAcquiredLeads}
-        onClose={() => setShowAcquiredLeads(false)}
-        permits={permits}
-        companyProfile={companyProfile}
-      />
+      {/* Show acquired leads dashboard only when claim feature is enabled */}
+      {planAllowsFeature('claim') && (
+        <AcquiredLeadsDashboard
+          businessId={user?.uid || "demo-business"}
+          isOpen={showAcquiredLeads}
+          onClose={() => setShowAcquiredLeads(false)}
+          permits={permits}
+          companyProfile={companyProfile}
+        />
+      )}
 
     </div>
   );
