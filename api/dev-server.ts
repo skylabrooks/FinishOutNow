@@ -182,7 +182,7 @@ const server = http.createServer(async (req, res) => {
       responseWrapper.status(202).json({ success: true, messageId: `local_${Date.now()}` });
     }
   } else if (pathname === '/health') {
-    responseWrapper.status(200).json({ status: 'OK', timestamp: Date.now() });
+    responseWrapper.status(200).json({ status: 'healthy', timestamp: Date.now() });
   } else {
     responseWrapper.status(404).json({ error: 'Not found' });
   }
