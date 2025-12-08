@@ -89,10 +89,13 @@ export default async function handler(req: any, res: any) {
       headers['X-App-Token'] = apiKeyId;
     }
 
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
+
     const response = await fetch(`${DALLAS_API_ENDPOINT}?${query}`, {
       headers,
-      timeout: 10000 // 10 second timeout
-    });
+      signal: controller.signal
+    }).finally(() => clearTimeout(timeoutId));
 
     if (!response.ok) {
       throw new Error(`Dallas API Error: ${response.statusText} (${response.status})`);
