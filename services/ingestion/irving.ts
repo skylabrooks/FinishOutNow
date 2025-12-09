@@ -2,6 +2,9 @@
 import { Permit } from '../../types';
 import { normalizeDate, normalizeStatus, normalizePermitType } from '../normalization';
 
+// Minimum valuation threshold per 01_data_sources_and_ingestion.md
+const MIN_VALUATION = 50000;
+
 // Irving Open Data / ArcGIS Feature Server
 // Endpoint logic based on standard ArcGIS REST API patterns
 const IRVING_API_ENDPOINT = 'https://services.arcgis.com/s8c6cO82d6G13c8k/arcgis/rest/services/Permits/FeatureServer/0/query';
@@ -52,7 +55,13 @@ export const fetchIrvingPermits = async (): Promise<Permit[]> => {
 
     if (!data.features) return [];
 
-    return data.features.map((feature: any) => {
+    // Filter by minimum valuation and map to internal format
+    return data.features
+      .filter((feature: any) => {
+        const attrs = feature.attributes;
+        return (attrs.VALUATION || 0) >= MIN_VALUATION;
+      })
+      .map((feature: any) => {
       const attrs = feature.attributes;
       return {
         id: `IRV-${attrs.PERMITNUMBER || attrs.OBJECTID}`,

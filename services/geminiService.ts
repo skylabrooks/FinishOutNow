@@ -61,18 +61,17 @@ export const analyzePermit = async (
   }
 
   console.error("Gemini Analysis Failed after retries:", lastError);
-    // Fallback for demo purposes if API key fails or network error
-    return {
-      isCommercialTrigger: false,
-      confidenceScore: 0,
-      projectType: "Maintenance/Repair",
-      tradeOpportunities: { securityIntegrator: false, signage: false, lowVoltageIT: false },
-      extractedEntities: {},
-      reasoning: "Analysis failed or API error.",
-      category: LeadCategory.UNKNOWN,
-      salesPitch: "Could not analyze at this time.",
-      urgency: "Low",
-      estimatedValue: 0
-    };
-  }
+  // Fallback for demo purposes if API key fails or network error
+  return {
+    isCommercialTrigger: false,
+    confidenceScore: 0,
+    projectType: "Maintenance/Repair",
+    tradeOpportunities: { securityIntegrator: false, signage: false, lowVoltageIT: false },
+    extractedEntities: {},
+    reasoning: "Analysis failed or API error.",
+    category: LeadCategory.UNKNOWN,
+    salesPitch: "Could not analyze at this time.",
+    urgency: "Low",
+    estimatedValue: 0
+  };
 };

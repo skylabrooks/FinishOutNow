@@ -1,6 +1,10 @@
 
 
-export type PermitType = 'Commercial Remodel' | 'Certificate of Occupancy' | 'New Construction';
+export type PermitType = 'Commercial Remodel' | 'Certificate of Occupancy' | 'New Construction' | 'Utility Hookup' | 'Zoning Case' | 'Eviction Notice' | 'Health Permit' | 'Food Service Permit' | 'Liquor License' | 'Fire Alarm' | 'Incentive Announcement';
+
+export type ProjectStage = 'PRE_PERMIT' | 'PERMIT_APPLIED' | 'PERMIT_ISSUED' | 'UNDER_CONSTRUCTION' | 'FINAL_INSPECTION' | 'COMPLETE' | 'OCCUPANCY_PENDING' | 'CONCEPT' | 'PRE_OPENING';
+
+export type LandUse = 'COMMERCIAL' | 'RESIDENTIAL' | 'MIXED' | 'UNKNOWN';
 
 export interface Permit {
   id: string;
@@ -14,6 +18,35 @@ export interface Permit {
   valuation: number;
   status: 'Issued' | 'Under Review' | 'Pending Inspection';
   dataSource?: string;
+  
+  // Quality filter fields (01_data_sources_and_ingestion.md)
+  stage?: ProjectStage;
+  landUse?: LandUse;
+  isActionable?: boolean;   // Meets all minimum quality filters
+  isRecent?: boolean;        // Within stage-specific recency window (default 30 days)
+  leadScore?: number;        // 0-100 composite quality score
+  geocoded?: boolean;
+  valueAboveThreshold?: boolean;
+  typeSupported?: boolean;
+  landUseSupported?: boolean;
+  businessVerified?: boolean;
+  withinRegion?: boolean;
+  addressValid?: boolean;
+  recencyWindowDays?: number;
+  highQualityCandidate?: boolean; // Actionable + score ≥ threshold
+  isHighQuality?: boolean;        // Actionable + recent + score ≥ threshold
+  
+  // Geospatial fields (Phase 2)
+  geometry?: GeoPoint | GeoPolygon;
+  clusterId?: string;
+  hotspotId?: string;
+  
+  // Contractor fields (Phase 3)
+  contractorId?: string;
+  contractorQualityScore?: number;
+  
+  // ML predictions (Phase 5)
+  prediction?: ProjectProbability;
 }
 
 export enum LeadCategory {
@@ -42,6 +75,9 @@ export interface EnrichmentData {
   officialMailingAddress?: string;
   rightToTransactBusiness?: boolean;
   source?: 'TX Comptroller' | 'Mock';
+  naicsCode?: string;
+  naicsDescription?: string;
+  isCommercialNaics?: boolean;
 }
 
 export interface AIAnalysisResult {
@@ -93,4 +129,168 @@ export interface LeadVisibility {
   claimedBy?: string;
   hiddenFields: ('applicant' | 'address' | 'valuation' | 'description')[];
   visibleFields: ('permitType' | 'city' | 'status' | 'appliedDate' | 'applicant' | 'address' | 'valuation' | 'description')[];
+}
+
+// ========================================
+// PHASE 1: PREDICTIVE ALERTS
+// ========================================
+
+export interface GeoFilter {
+  cities?: string[];
+  radiusMiles?: number;
+  centerLat?: number;
+  centerLng?: number;
+  excludeZipCodes?: string[];
+}
+
+export interface ScoringThresholds {
+  minLeadScore?: number;
+  minValuation?: number;
+  maxValuation?: number;
+  minConfidenceScore?: number;
+}
+
+export type NotificationChannel = 'email' | 'sms' | 'push' | 'in_app';
+
+export interface UserPreferences {
+  userId: string;
+  geoFilters?: GeoFilter;
+  scoringThresholds?: ScoringThresholds;
+  notificationChannels: NotificationChannel[];
+  categories?: LeadCategory[];
+  permitTypes?: PermitType[];
+  enabled: boolean;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface AlertQueueItem {
+  id: string;
+  userId: string;
+  leadId: string;
+  lead: EnrichedPermit;
+  channels: NotificationChannel[];
+  status: 'pending' | 'sent' | 'failed';
+  createdAt: string;
+  sentAt?: string;
+  error?: string;
+}
+
+// ========================================
+// PHASE 2: GEOSPATIAL CLUSTERING
+// ========================================
+
+export interface GeoPoint {
+  type: 'Point';
+  coordinates: [number, number]; // [longitude, latitude]
+}
+
+export interface GeoPolygon {
+  type: 'Polygon';
+  coordinates: [number, number][][]; // Array of rings
+}
+
+export interface LeadCluster {
+  id: string;
+  centroid: GeoPoint;
+  leads: string[]; // Array of lead IDs
+  averageScore: number;
+  totalValuation: number;
+  radiusMiles: number;
+  density: number; // leads per square mile
+  topCategories: LeadCategory[];
+  createdAt: string;
+}
+
+export interface Hotspot {
+  id: string;
+  center: GeoPoint;
+  intensity: number; // 0-100
+  leadCount: number;
+  avgValuation: number;
+  radiusMiles: number;
+}
+
+// ========================================
+// PHASE 3: CONTRACTOR BENCHMARKING
+// ========================================
+
+export interface ContractorProfile {
+  id: string;
+  name: string;
+  aliases: string[]; // For fuzzy matching
+  projectCount: number;
+  totalValuation: number;
+  avgProjectSize: number;
+  categories: LeadCategory[];
+  cities: string[];
+  qualityScore: number; // 0-100
+  reliability: number; // 0-100 based on project completion
+  lastActive: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface ContractorPerformance {
+  contractorId: string;
+  successfulProjects: number;
+  failedProjects: number;
+  avgTimeToComplete: number; // days
+  avgValuation: number;
+  topCategories: LeadCategory[];
+}
+
+// ========================================
+// PHASE 4: SUBCONTRACTOR RECOMMENDATIONS
+// ========================================
+
+export interface GCSubRelationship {
+  gcId: string;
+  gcName: string;
+  subId: string;
+  subName: string;
+  projectCount: number;
+  categories: LeadCategory[];
+  lastWorkedTogether: string;
+  relationshipStrength: number; // 0-100
+}
+
+export interface SubcontractorRecommendation {
+  subId: string;
+  subName: string;
+  relevanceScore: number; // 0-100
+  reason: string;
+  pastProjectsWithGC: number;
+  categories: LeadCategory[];
+  contactInfo?: {
+    phone?: string;
+    email?: string;
+    website?: string;
+  };
+}
+
+export interface ProspectListItem {
+  leadId: string;
+  lead: EnrichedPermit;
+  recommendations: SubcontractorRecommendation[];
+  generatedAt: string;
+}
+
+// ========================================
+// PHASE 5: ML PREDICTIONS
+// ========================================
+
+export interface ProjectProbability {
+  leadId: string;
+  probabilityScore: number; // 0-100
+  estimatedStartDate?: string;
+  estimatedDuration?: number; // days
+  confidence: number; // 0-100
+  factors: {
+    historicalPattern: number;
+    seasonality: number;
+    marketConditions: number;
+    contractorActivity: number;
+  };
+  lastUpdated: string;
 }

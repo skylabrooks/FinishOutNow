@@ -1,6 +1,9 @@
 
 import { Permit } from '../../types';
 import { normalizeDate, normalizeStatus, normalizePermitType } from '../normalization';
+
+// Minimum valuation threshold per 01_data_sources_and_ingestion.md
+const MIN_VALUATION = 50000;
 // @ts-ignore
 import { read, utils } from 'xlsx';
 
@@ -52,7 +55,10 @@ export const fetchPlanoPermits = async (): Promise<Permit[]> => {
     */
     // --------------------------------------------------------------------------
 
-    return mockPlanoData.map(record => ({
+    // Filter by minimum valuation and map to internal format
+    return mockPlanoData
+      .filter(record => record.VALUATION >= MIN_VALUATION)
+      .map(record => ({
       id: `PLA-${record.PERMIT_NO}`,
       permitNumber: record.PERMIT_NO,
       permitType: normalizePermitType(record.TYPE, record.DESC),

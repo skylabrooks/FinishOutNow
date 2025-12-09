@@ -172,6 +172,23 @@ export class GeocodingService {
       addresses: Object.keys(this.cache)
     };
   }
+
+  /**
+   * Convert coordinates to GeoJSON Point
+   */
+  toGeoJSONPoint(coords: Coordinates): { type: 'Point'; coordinates: [number, number] } {
+    return {
+      type: 'Point',
+      coordinates: [coords[1], coords[0]] // GeoJSON uses [lng, lat]
+    };
+  }
+
+  /**
+   * Convert GeoJSON Point to coordinates
+   */
+  fromGeoJSONPoint(point: { type: 'Point'; coordinates: [number, number] }): Coordinates {
+    return [point.coordinates[1], point.coordinates[0]]; // [lat, lng]
+  }
 }
 
 // Singleton instance

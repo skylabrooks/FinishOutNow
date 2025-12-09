@@ -1,6 +1,9 @@
 
 import { Permit } from '../../types';
 
+// Minimum valuation threshold per 01_data_sources_and_ingestion.md
+const MIN_VALUATION = 50000;
+
 interface FWRawPermit {
   attributes: {
     Unique_ID?: string;
@@ -58,22 +61,28 @@ export const fetchFortWorthPermits = async (): Promise<Permit[]> => {
       data = geoJsonData.features || [];
     }
 
-    return data.map(record => {
-      const attrs = record.attributes || {};
-      return {
-        id: `FW-${attrs.Unique_ID || Math.random()}`,
-        permitNumber: attrs.Permit_No || 'N/A',
-        permitType: (attrs.Permit_Type || '').toLowerCase().includes('co') ? 'Certificate of Occupancy' : 'Commercial Permit',
-        address: attrs.Full_Street_Address || 'Address Not Listed',
-        city: 'Fort Worth',
-        appliedDate: new Date().toISOString().split('T')[0],
-        description: attrs.B1_WORK_DESC || attrs.Permit_Type || 'No description',
-        applicant: 'Unknown',
-        valuation: 0,
-        status: 'Under Review',
-        dataSource: 'Fort Worth Open Data (ArcGIS)'
-      };
-    });
+    // Map to internal format (Fort Worth sometimes omits valuation; keep only valued records >= MIN_VALUATION)
+    return data
+      .map(record => {
+        const attrs = record.attributes || {};
+        const valuation = Number(
+          attrs.Valuation ?? attrs.valuation ?? attrs.BLDG_VALUATION ?? attrs.Bldg_Valuation ?? attrs.Est_Const_Cost ?? 0
+        );
+        return {
+          id: `FW-${attrs.Unique_ID || Math.random()}`,
+          permitNumber: attrs.Permit_No || 'N/A',
+          permitType: (attrs.Permit_Type || '').toLowerCase().includes('co') ? 'Certificate of Occupancy' : 'Commercial Remodel',
+          address: attrs.Full_Street_Address || 'Address Not Listed',
+          city: 'Fort Worth',
+          appliedDate: new Date().toISOString().split('T')[0],
+          description: attrs.B1_WORK_DESC || attrs.Permit_Type || 'No description',
+          applicant: 'Unknown',
+          valuation,
+          status: 'Under Review',
+          dataSource: 'Fort Worth Open Data (ArcGIS)'
+        } as Permit;
+      })
+      .filter(p => p.valuation >= MIN_VALUATION);
 
   } catch (error) {
     console.warn('Failed to fetch Fort Worth permits:', error);

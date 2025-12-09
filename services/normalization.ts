@@ -1,4 +1,4 @@
-import { Permit, PermitType } from '../types';
+import { Permit, PermitType, LandUse } from '../types';
 
 /**
  * Normalizes a raw date string into ISO 8601 (YYYY-MM-DD).
@@ -66,4 +66,30 @@ export const normalizeCity = (city: string): Permit['city'] => {
   
   // Return as-is if it's a valid DFW city, otherwise default to Dallas
   return city.trim() || 'Dallas';
+};
+
+/**
+ * Classify land use based on permit type/description
+ */
+export const classifyLandUse = (permitType: string, description: string = ''): LandUse => {
+  const text = `${permitType} ${description}`.toLowerCase();
+
+  const commercialSignals = [
+    'commercial', 'tenant', 'office', 'retail', 'restaurant', 'warehouse',
+    'occupancy', 'finish out', 'build-out', 'shell', 'industrial', 'hotel', 'mall'
+  ];
+
+  const residentialSignals = [
+    'single family', 'sfr', 'residential', 'apartment', 'duplex', 'townhome', 'condo',
+    'multi-family', 'multifamily', 'mf-', 'sfh'
+  ];
+
+  const hasCommercial = commercialSignals.some(k => text.includes(k));
+  const hasResidential = residentialSignals.some(k => text.includes(k));
+
+  if (hasCommercial && hasResidential) return 'MIXED';
+  if (hasCommercial) return 'COMMERCIAL';
+  if (hasResidential) return 'RESIDENTIAL';
+
+  return 'UNKNOWN';
 };

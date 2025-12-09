@@ -1,6 +1,9 @@
 
 import { Permit } from '../../types';
 
+// Minimum valuation threshold per 01_data_sources_and_ingestion.md
+const MIN_VALUATION = 50000;
+
 interface DallasRawPermit {
   permit_type: string;
   permit_no: string;
@@ -67,7 +70,10 @@ export const fetchDallasPermits = async (): Promise<Permit[]> => {
       data = await response.json();
     }
 
-    return data.map(record => ({
+    // Filter by minimum valuation and map to internal format
+    return data
+      .filter(record => parseFloat(record.valuation) >= MIN_VALUATION)
+      .map(record => ({
       id: `DAL-${record.permit_no || Math.random()}`,
       permitNumber: record.permit_no || 'N/A',
       permitType: (record.permit_type || '').includes('Occupancy') ? 'Certificate of Occupancy' : 'Commercial Remodel',

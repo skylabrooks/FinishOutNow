@@ -6,8 +6,16 @@ import { fetchFortWorthPermits } from './ingestion/fortWorth';
 import { fetchArlingtonPermits } from './ingestion/arlington';
 import { fetchPlanoPermits } from './ingestion/plano';
 import { fetchIrvingPermits } from './ingestion/irving';
+import { fetchUtilityConnections } from './ingestion/utilityConnections';
+import { fetchZoningCases } from './ingestion/zoningCases';
+import { fetchLegalVacancySignals } from './ingestion/legalVacancy';
+import { fetchLicensingSignals } from './ingestion/licensingSignals';
+import { fetchIncentiveSignals } from './ingestion/incentiveSignals';
 import { searchFranchiseTaxpayer } from './enrichment/comptroller';
 import { geocodingService } from './geocoding/GeocodingService';
+import { applyQualityFilters, evaluateHighQuality } from './qualityFilter';
+import { classifyLandUse } from './normalization';
+import { computeLeadScore } from '../utils/leadScoring';
 
 /**
  * Geocode permits that don't already have coordinates.
@@ -45,17 +53,67 @@ async function geocodePermits(permits: EnrichedPermit[]) {
   }
 }
 
+/**
+ * Map permit status to project stage for downstream filtering.
+ */
+function mapStageFromStatus(status: Permit['status']): Permit['stage'] {
+  if (status === 'Issued') return 'PERMIT_ISSUED';
+  if (status === 'Pending Inspection') return 'FINAL_INSPECTION';
+  return 'PERMIT_APPLIED';
+}
+
+/**
+ * Link creative signals to existing permits by address/geometry.
+ * Per 02_creative_signals_pipeline.md: boost lead_score on matched leads,
+ * create new leads only when signals are strong.
+ */
+function linkSignalsToLeads(leads: EnrichedPermit[], signals: Permit[]): EnrichedPermit[] {
+  // Normalize addresses for matching (simple string comparison; could be improved with geocoding)
+  const normalizeAddress = (addr: string): string => addr.toLowerCase().trim();
+  
+  const leadsByAddress = new Map<string, EnrichedPermit[]>();
+  for (const lead of leads) {
+    const key = normalizeAddress(lead.address);
+    if (!leadsByAddress.has(key)) {
+      leadsByAddress.set(key, []);
+    }
+    leadsByAddress.get(key)!.push(lead);
+  }
+
+  // For each signal, try to link to an existing lead
+  for (const signal of signals) {
+    const key = normalizeAddress(signal.address);
+    const matchedLeads = leadsByAddress.get(key);
+
+    if (matchedLeads && matchedLeads.length > 0) {
+      // Boost lead_score on matched leads (secondary signals; e.g., +10 points)
+      for (const lead of matchedLeads) {
+        if (lead.leadScore !== undefined) {
+          lead.leadScore = Math.min(100, lead.leadScore + 10);
+        }
+      }
+    }
+    // Note: Create new leads only if signal is exceptionally strong
+    // For now, we don't auto-create from weak signals.
+  }
+
+  return leads;
+}
+
+// ...existing code...
+
 // -----------------------------------------------------------------------------
 
 export const leadManager = {
   /**
    * Aggregates leads from all live API sources and merges with mock data.
    * Handles deduplication and normalization.
+   * Integrates creative signals (utility, zoning, legal, licensing, incentives).
    */
   fetchAllLeads: async (): Promise<EnrichedPermit[]> => {
-    console.log('LeadManager: Starting automated sourcing (Phase 2)...');
+    console.log('LeadManager: Starting automated sourcing (Phase 2) with creative signals...');
 
-    // Run fetches in parallel for performance
+    // Run standard permit fetches in parallel for performance
     const [dallas, fw, arlington, plano, irving] = await Promise.all([
       fetchDallasPermits(),
       fetchFortWorthPermits(),
@@ -66,7 +124,18 @@ export const leadManager = {
 
     console.log(`LeadManager: Fetched ${dallas.length} DAL, ${fw.length} FW, ${arlington.length} ARL, ${plano.length} PLA, ${irving.length} IRV.`);
 
-    // Combine all sources
+    // Fetch creative signals in parallel
+    const [utility, zoning, legal, licensing, incentive] = await Promise.all([
+      fetchUtilityConnections(),
+      fetchZoningCases(),
+      fetchLegalVacancySignals(),
+      fetchLicensingSignals(),
+      fetchIncentiveSignals()
+    ]);
+
+    console.log(`LeadManager: Fetched creative signals: ${utility.length} utility, ${zoning.length} zoning, ${legal.length} legal, ${licensing.length} licensing, ${incentive.length} incentive.`);
+
+    // Combine all standard permit sources (excluding signals initially)
     // Note: We keep MOCK_PERMITS for demonstration purposes
     const allPermits = [
       ...dallas,
@@ -77,6 +146,15 @@ export const leadManager = {
       ...MOCK_PERMITS
     ];
 
+    // Collect all creative signals
+    const allSignals = [
+      ...utility,
+      ...zoning,
+      ...legal,
+      ...licensing,
+      ...incentive
+    ];
+
     // Deduplicate by ID
     const uniquePermitsMap = new Map<string, EnrichedPermit>();
     allPermits.forEach(permit => {
@@ -85,10 +163,14 @@ export const leadManager = {
       }
     });
 
-    // Convert back to array
+    // Convert back to array and enrich with stage/land use
     const sortedLeads = Array.from(uniquePermitsMap.values()).sort((a, b) => {
-        return new Date(b.appliedDate).getTime() - new Date(a.appliedDate).getTime();
-    });
+      return new Date(b.appliedDate).getTime() - new Date(a.appliedDate).getTime();
+    }).map(permit => ({
+      ...permit,
+      stage: mapStageFromStatus(permit.status),
+      landUse: classifyLandUse(permit.permitType, permit.description)
+    }));
 
     // Attempt to geocode any permits that don't already include coordinates.
     // This runs in the client (leadManager is used by the browser app). We cache results
@@ -103,7 +185,20 @@ export const leadManager = {
       }
     }
 
-    return sortedLeads;
+    // Apply quality filters and compute lead scores
+    const withQuality = sortedLeads.map(p => applyQualityFilters(p));
+    const scored = withQuality.map(p => ({
+      ...p,
+      leadScore: computeLeadScore(p)
+    }));
+
+    // Link creative signals to leads and boost matching lead scores
+    const withSignals = linkSignalsToLeads(scored, allSignals);
+
+    // Derive high-quality flags after scoring and signal boosts
+    const finalized = withSignals.map(p => evaluateHighQuality(p));
+
+    return finalized;
   },
 
   /**

@@ -1,6 +1,9 @@
 
 import { Permit } from '../../types';
 
+// Minimum valuation threshold per 01_data_sources_and_ingestion.md
+const MIN_VALUATION = 50000;
+
 // Arlington uses ArcGIS usually, which can be tricky with CORS.
 // This is a simulated fetch that mimics the structure of an ArcGIS FeatureLayer query.
 // In a production backend, this would use a proxy.
@@ -41,7 +44,8 @@ export const fetchArlingtonPermits = async (): Promise<Permit[]> => {
       }
     ];
 
-    return mockLiveResponse;
+    // Filter by minimum valuation
+    return mockLiveResponse.filter(p => p.valuation >= MIN_VALUATION);
 
   } catch (error) {
     console.warn('Failed to fetch Arlington permits:', error);
