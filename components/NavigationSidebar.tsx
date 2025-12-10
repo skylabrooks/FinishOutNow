@@ -31,49 +31,49 @@ export default function NavigationSidebar({
   canAnalytics,
 }: NavigationSidebarProps) {
   return (
-    <div className="hidden lg:block space-y-2 sticky top-24">
+    <div className="hidden lg:block space-y-2 sticky top-24 animate-fade-in">
       <button
         onClick={() => setViewMode('list')}
-        className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all ${
+        className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl font-medium transition-all ${
           viewMode === 'list'
-            ? 'bg-blue-600 text-white shadow-lg shadow-blue-900/20'
-            : 'text-slate-400 hover:bg-slate-800/50'
+            ? 'bg-gradient-to-r from-blue-600 to-blue-500 text-white shadow-lg shadow-blue-900/40 scale-105'
+            : 'text-slate-400 hover:bg-slate-800/70 hover:text-slate-200'
         }`}
       >
         <FileText size={18} />
-        <span className="font-medium">Permit Feed</span>
+        <span>Permit Feed</span>
       </button>
 
       {canMap && (
         <button
           onClick={() => setViewMode('map')}
-          className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all ${
+          className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl font-medium transition-all ${
             viewMode === 'map'
-              ? 'bg-blue-600 text-white shadow-lg shadow-blue-900/20'
-              : 'text-slate-400 hover:bg-slate-800/50'
+              ? 'bg-gradient-to-r from-blue-600 to-blue-500 text-white shadow-lg shadow-blue-900/40 scale-105'
+              : 'text-slate-400 hover:bg-slate-800/70 hover:text-slate-200'
           }`}
         >
           <MapIcon size={18} />
-          <span className="font-medium">Map View</span>
+          <span>Map View</span>
         </button>
       )}
 
       {canAnalytics && (
         <button
           onClick={() => setViewMode('analytics')}
-          className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl transition-all ${
+          className={`w-full flex items-center gap-3 px-4 py-3 rounded-xl font-medium transition-all ${
             viewMode === 'analytics'
-              ? 'bg-blue-600 text-white shadow-lg shadow-blue-900/20'
-              : 'text-slate-400 hover:bg-slate-800/50'
+              ? 'bg-gradient-to-r from-blue-600 to-blue-500 text-white shadow-lg shadow-blue-900/40 scale-105'
+              : 'text-slate-400 hover:bg-slate-800/70 hover:text-slate-200'
           }`}
         >
           <Zap size={18} />
-          <span className="font-medium">Analytics</span>
+          <span>Analytics</span>
         </button>
       )}
 
       <div className="mt-8 px-4">
-        <h3 className="text-xs font-semibold text-slate-500 uppercase tracking-wider mb-4">
+        <h3 className="text-xs font-bold text-slate-500 uppercase tracking-wider mb-4">
           Sort By
         </h3>
         <div className="space-y-1">
@@ -81,8 +81,10 @@ export default function NavigationSidebar({
             <button
               key={item.key}
               onClick={() => onSort(item.key)}
-              className={`w-full flex items-center justify-between text-sm py-2 group ${
-                sortKey === item.key ? 'text-blue-400' : 'text-slate-400'
+              className={`w-full flex items-center justify-between text-sm py-2.5 px-2 rounded-lg transition-all group ${
+                sortKey === item.key 
+                  ? 'text-blue-400 bg-blue-500/10 font-medium' 
+                  : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800/50'
               }`}
             >
               <span className="flex items-center gap-2">
@@ -90,7 +92,10 @@ export default function NavigationSidebar({
                 {item.label}
               </span>
               {sortKey === item.key && (
-                <ArrowUpDown size={12} className={sortDirection === 'desc' ? 'rotate-180' : ''} />
+                <ArrowUpDown 
+                  size={12} 
+                  className={`transition-transform ${sortDirection === 'desc' ? 'rotate-180' : ''}`} 
+                />
               )}
             </button>
           ))}
