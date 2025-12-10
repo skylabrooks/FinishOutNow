@@ -36,16 +36,11 @@ body {
   background: linear-gradient(180deg, #64748b 0%, #475569 100%);
 }
 
-/* Smooth transitions for all interactive elements */
-* {
-  transition-property: background-color, border-color, color, fill, stroke, opacity, box-shadow, transform;
+/* Smooth transitions for interactive elements - more selective for performance */
+button, a, input, select, textarea {
+  transition-property: background-color, border-color, color, opacity, box-shadow, transform;
   transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
   transition-duration: 150ms;
-}
-
-/* Disable transitions for elements that specify no transition */
-.no-transition {
-  transition: none !important;
 }
 
 /* Enhanced focus states */
