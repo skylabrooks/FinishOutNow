@@ -5,7 +5,8 @@ import { analysisSchema, systemInstruction } from "./gemini/schema";
 import { buildPrompt } from "./gemini/promptBuilder";
 import { mapGeminiResponse } from "./gemini/responseMapper";
 
-const ai = new GoogleGenAI({ apiKey: (import.meta as any).env.VITE_GEMINI_API_KEY || process.env.VITE_GEMINI_API_KEY });
+const apiKey = (import.meta as any).env.VITE_GEMINI_API_KEY || process.env.VITE_GEMINI_API_KEY || 'dummy-key-for-ui-testing';
+const ai = new GoogleGenAI({ apiKey });
 
 export const analyzePermit = async (
     description: string, 
