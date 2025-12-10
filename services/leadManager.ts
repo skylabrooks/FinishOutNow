@@ -11,11 +11,13 @@ import { fetchZoningCases } from './ingestion/zoningCases';
 import { fetchLegalVacancySignals } from './ingestion/legalVacancy';
 import { fetchLicensingSignals } from './ingestion/licensingSignals';
 import { fetchIncentiveSignals } from './ingestion/incentiveSignals';
+import { fetchTABCLicenses } from './ingestion/tabc'; // New dedicated TABC connector
 import { searchFranchiseTaxpayer } from './enrichment/comptroller';
 import { geocodingService } from './geocoding/GeocodingService';
 import { applyQualityFilters, evaluateHighQuality } from './qualityFilter';
 import { classifyLandUse } from './normalization';
 import { computeLeadScore } from '../utils/leadScoring';
+import { deduplicatePermits, getDeduplicationStats } from './deduplication'; // Lead deduplication
 
 /**
  * Geocode permits that don't already have coordinates.
@@ -124,16 +126,17 @@ export const leadManager = {
 
     console.log(`LeadManager: Fetched ${dallas.length} DAL, ${fw.length} FW, ${arlington.length} ARL, ${plano.length} PLA, ${irving.length} IRV.`);
 
-    // Fetch creative signals in parallel
-    const [utility, zoning, legal, licensing, incentive] = await Promise.all([
+    // Fetch creative signals in parallel (including new dedicated TABC connector)
+    const [utility, zoning, legal, licensing, incentive, tabc] = await Promise.all([
       fetchUtilityConnections(),
       fetchZoningCases(),
       fetchLegalVacancySignals(),
       fetchLicensingSignals(),
-      fetchIncentiveSignals()
+      fetchIncentiveSignals(),
+      fetchTABCLicenses() // Dedicated TABC connector with fixed query syntax
     ]);
 
-    console.log(`LeadManager: Fetched creative signals: ${utility.length} utility, ${zoning.length} zoning, ${legal.length} legal, ${licensing.length} licensing, ${incentive.length} incentive.`);
+    console.log(`LeadManager: Fetched creative signals: ${utility.length} utility, ${zoning.length} zoning, ${legal.length} legal, ${licensing.length} licensing, ${incentive.length} incentive, ${tabc.length} TABC.`);
 
     // Combine all standard permit sources (excluding signals initially)
     // Note: We keep MOCK_PERMITS for demonstration purposes
@@ -146,13 +149,14 @@ export const leadManager = {
       ...MOCK_PERMITS
     ];
 
-    // Collect all creative signals
+    // Collect all creative signals (including TABC)
     const allSignals = [
       ...utility,
       ...zoning,
       ...legal,
       ...licensing,
-      ...incentive
+      ...incentive,
+      ...tabc
     ];
 
     // Deduplicate by ID
@@ -195,8 +199,18 @@ export const leadManager = {
     // Link creative signals to leads and boost matching lead scores
     const withSignals = linkSignalsToLeads(scored, allSignals);
 
-    // Derive high-quality flags after scoring and signal boosts
-    const finalized = withSignals.map(p => evaluateHighQuality(p));
+    // **NEW: Deduplicate leads before finalizing**
+    // This identifies and merges duplicate permits from different sources
+    // Multi-signal leads (permit + CO + zoning) get score boost
+    const beforeDedup = withSignals.length;
+    const deduped = deduplicatePermits(withSignals);
+    const stats = getDeduplicationStats(withSignals, deduped);
+    
+    console.log(`[Deduplication] ${stats.duplicatesRemoved} duplicates removed (${stats.deduplicationRate.toFixed(1)}%)`);
+    console.log(`[Deduplication] ${stats.multiSignalLeads} multi-signal leads created`);
+
+    // Derive high-quality flags after scoring, signal boosts, and deduplication
+    const finalized = deduped.map(p => evaluateHighQuality(p));
 
     return finalized;
   },

@@ -1,5 +1,5 @@
 import { AIAnalysisResult } from "../../types";
-import { categorizeFromDescription, isMaintenanceLike } from "./categoryClassifier";
+import { categorizeFromDescription, isMaintenanceLike, extractContractorName, extractTenantName } from "./categoryClassifier";
 
 interface RawGeminiResponse {
   is_commercial_trigger: boolean;
@@ -26,11 +26,12 @@ interface RawGeminiResponse {
 
 /**
  * Calculates adjusted confidence score based on multiple signals and business rules.
+ * v2.0: Aligns with Tier 1/2/3 framework from schema.ts
  * Factors in:
- * - Signal strength assessment
+ * - Signal strength assessment (now mapped to Tier baselines)
  * - Trade opportunity matches
- * - Valuation thresholds
- * - Maintenance detection
+ * - Valuation thresholds (acts as tiebreaker for Tier 2/3)
+ * - Maintenance detection (hard cap at 30)
  * - Signal balance (positive vs negative)
  */
 function calculateAdjustedConfidence(
@@ -42,27 +43,34 @@ function calculateAdjustedConfidence(
   let score = raw.confidence_score ?? 0;
   const maintenanceLike = isMaintenanceLike(description, permitType);
 
-  // Apply signal strength penalty if weak
+  // Apply signal strength flooring per Tier 1/2/3 framework
+  // Tier 1 = Extreme Confidence (85+), Tier 2 = Strong (60-79), Tier 3 = Moderate (40-59), None = <40
   if (raw.signal_strength) {
     const signalMap: Record<string, number> = {
-      "Very Strong": 95,
-      "Strong": 75,
-      "Moderate": 50,
+      "Tier 1": 85,        // Extreme Confidence: CO, TI, Build-out signals
+      "Tier 2": 72,        // Strong: Demolition, Storefront, Data infrastructure
+      "Tier 3": 50,        // Moderate: Single strong indicator or mixed signals
+      "Very Strong": 85,   // Legacy support
+      "Strong": 72,        // Legacy support (adjusted from 75 to align with Tier 2)
+      "Moderate": 50,      // Maintains consistency with Tier 3
       "Weak": 25,
       "None": 5
     };
     const signalFloor = signalMap[raw.signal_strength] || score;
-    score = Math.min(score, signalFloor);
+    // Use signal floor as minimum, allowing score to exceed it for excellent cases
+    score = Math.max(score, signalFloor);
   }
 
-  // Penalize if more negative than positive signals
+  // Penalize if negative signals outnumber positive signals
   const posCount = raw.positive_signals?.length || 0;
   const negCount = raw.negative_signals?.length || 0;
   if (negCount > posCount) {
-    score = Math.max(0, score - (negCount - posCount) * 10);
+    // More aggressive penalty for signal imbalance
+    score = Math.max(0, score - (negCount - posCount) * 12);
   }
 
   // Trade opportunity bonus: +5 points per match (max +15)
+  // Rewards permits that match contractor specialization
   const opportunityCount = [
     raw.trade_opportunities.security_integrator,
     raw.trade_opportunities.signage,
@@ -70,14 +78,20 @@ function calculateAdjustedConfidence(
   ].filter(Boolean).length;
   score += opportunityCount * 5;
 
-  // Valuation-based adjustments
-  if (valuation < 1000) {
-    score = Math.min(score, 20);
-  } else if (valuation > 100000) {
-    score = Math.min(100, score + 10); // Bonus for high-value projects
+  // Valuation-based adjustments (acts as tiebreaker for Tier 2/3 cases)
+  if (valuation < 5000) {
+    // Very small projects: hard cap at 40 (below Tier 3 threshold)
+    score = Math.min(score, 40);
+  } else if (valuation >= 50000 && valuation < 100000) {
+    // Mid-range commercial (sweet spot): boost by 5 points
+    score = Math.min(100, score + 5);
+  } else if (valuation >= 100000) {
+    // High-value projects: significant boost (valuation validates commercial intent)
+    score = Math.min(100, score + 12);
   }
 
-  // Maintenance detection hard penalty
+  // Maintenance detection hard cap (prevents false positives on maintenance work)
+  // Even if other signals suggest commercial, maintenance-focused description caps at 30
   if (maintenanceLike) {
     score = Math.min(score, 30);
   }
@@ -85,9 +99,11 @@ function calculateAdjustedConfidence(
   return Math.max(0, Math.min(100, Math.round(score)));
 }
 
+
 /**
  * Maps the snake_case API response from Gemini to camelCase for the application.
  * Also applies business logic like maintenance detection and confidence adjustments.
+ * v2.0: Enriches extracted entities with client-side extraction patterns.
  */
 export function mapGeminiResponse(
   raw: RawGeminiResponse,
@@ -103,6 +119,11 @@ export function mapGeminiResponse(
   // Re-evaluate commercial trigger if confidence is very low after adjustment
   const derivedIsCommercial = adjustedConfidence < 35 ? false : raw.is_commercial_trigger;
 
+  // Enhance extracted entities with client-side pattern matching
+  // Gemini provides the primary extraction, but we augment with fallback patterns
+  const tenantName = raw.extracted_entities?.tenant_name || extractTenantName(description);
+  const generalContractor = raw.extracted_entities?.general_contractor || extractContractorName(description);
+
   return {
     isCommercialTrigger: derivedIsCommercial,
     confidenceScore: adjustedConfidence,
@@ -113,8 +134,8 @@ export function mapGeminiResponse(
       lowVoltageIT: raw.trade_opportunities?.low_voltage_it ?? false
     },
     extractedEntities: {
-      tenantName: raw.extracted_entities?.tenant_name,
-      generalContractor: raw.extracted_entities?.general_contractor
+      tenantName,
+      generalContractor
     },
     reasoning: raw.reasoning,
     category: categorizeFromDescription(description, raw.primary_category),

@@ -31,7 +31,7 @@ export const analyzePermit = async (
         }
       });
 
-      const text = typeof response.text === "function" ? response.text() : response.text;
+      const text = response.text;
 
       if (typeof text === "string" && text.trim().length > 0) {
         const raw = JSON.parse(text);

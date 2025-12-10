@@ -1,8 +1,16 @@
 
 import { Permit } from '../../types';
 
-// Minimum valuation threshold per 01_data_sources_and_ingestion.md
-const MIN_VALUATION = 50000;
+// Note: Arlington building permits API not publicly accessible
+// Using Planning & Zoning Cases as early commercial activity signal
+// Estimated valuations based on case type (actual permits would come later)
+const ESTIMATED_VALUATIONS: Record<string, number> = {
+  'Site Plan': 250000,
+  'SUP': 150000,  // Special Use Permit
+  'PD': 200000,   // Planned Development
+  'Zoning Change': 100000,
+  'Default': 75000
+};
 
 // Use API proxy endpoint (resolves CORS issues)
 const PROXY_ENDPOINT = '/api/permits-arlington';
@@ -12,42 +20,68 @@ interface ArlingtonProxyResponse {
   data?: any[];
   error?: string;
   cached?: boolean;
+  note?: string;
 }
 
 export const fetchArlingtonPermits = async (): Promise<Permit[]> => {
   try {
-    // Try proxy first (production-ready)
+    console.log('[Arlington] Fetching via backend proxy...');
+    
     const response = await fetch(`${PROXY_ENDPOINT}?limit=20`).catch(() => null);
 
     if (response?.ok) {
       const proxyData: ArlingtonProxyResponse = await response.json();
+      
       if (proxyData.success && proxyData.data && proxyData.data.length > 0) {
-        console.log(`[Arlington] Fetched ${proxyData.data.length} permits via proxy`);
+        console.log(`[Arlington] Fetched ${proxyData.data.length} zoning cases via proxy`);
+        
+        if (proxyData.note) {
+          console.log(`[Arlington] Note: ${proxyData.note}`);
+        }
         
         return proxyData.data
           .map((feature: any) => {
             const attrs = feature.attributes || feature;
-            const valuation = Number(attrs.VALUATION || attrs.valuation || attrs.EST_COST || 0);
+            
+            // Estimate valuation based on case type
+            const caseType = attrs.CaseType || 'Default';
+            const estimatedValue = ESTIMATED_VALUATIONS[caseType] || ESTIMATED_VALUATIONS['Default'];
+            
+            // Parse date
+            let appliedDate = new Date().toISOString().split('T')[0];
+            if (attrs.DateFiled) {
+              try {
+                appliedDate = new Date(attrs.DateFiled).toISOString().split('T')[0];
+              } catch (e) {
+                // Use current date if parsing fails
+              }
+            }
+            
             return {
-              id: `ARL-${attrs.PERMIT_NO || attrs.OBJECTID || Math.random()}`,
-              permitNumber: attrs.PERMIT_NO || attrs.PERMITNUMBER || 'N/A',
-              permitType: (attrs.PERMIT_TYPE || '').includes('CO') ? 'Certificate of Occupancy' : 'Commercial Remodel',
-              address: `${attrs.ADDRESS || attrs.LOCATION || 'Address Not Listed'}, ARLINGTON, TX`,
+              id: `ARL-${attrs.CaseNumber || attrs.OBJECTID || Math.random()}`,
+              permitNumber: attrs.CaseNumber || 'N/A',
+              permitType: 'Zoning Case' as any, // Early stage commercial signal
+              address: `${attrs.Address || 'Address Not Listed'}, ARLINGTON, TX`,
               city: 'Arlington' as const,
-              appliedDate: attrs.ISSUE_DATE ? new Date(attrs.ISSUE_DATE).toISOString().split('T')[0] : new Date().toISOString().split('T')[0],
-              description: attrs.DESCRIPTION || attrs.WORK_DESC || attrs.PERMIT_TYPE || 'Commercial work',
-              applicant: attrs.APPLICANT || attrs.CONTRACTOR || 'Unknown',
-              valuation,
-              status: 'Issued' as const,
-              dataSource: 'Arlington Permits (Live)'
+              appliedDate,
+              description: attrs.CaseDescription || attrs.CaseType || 'Commercial zoning case',
+              applicant: attrs.Applicant || 'Unknown',
+              valuation: estimatedValue,
+              status: (attrs.Status || 'Under Review') as any,
+              dataSource: 'Arlington Planning & Zoning (Live)'
             } as Permit;
           })
-          .filter(p => p.valuation >= MIN_VALUATION);
+          .filter(p => {
+            // Filter for commercial-relevant cases
+            const desc = (p.description || '').toLowerCase();
+            const commercialKeywords = ['commercial', 'retail', 'office', 'restaurant', 'tenant', 'site plan', 'mixed'];
+            return commercialKeywords.some(kw => desc.includes(kw));
+          });
       }
     }
 
     // Fallback to mock data if proxy unavailable
-    console.log('[Arlington] Proxy unavailable, using mock data');
+    console.log('[Arlington] Proxy unavailable or returned no data, using mock fallback');
     return [
       {
         id: 'ARL-2025-001',

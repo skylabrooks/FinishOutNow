@@ -1,4 +1,4 @@
-import { Permit, PermitType, LandUse } from '../types';
+import { Permit, PermitType, LandUse, City } from '../types';
 
 /**
  * Normalizes a raw date string into ISO 8601 (YYYY-MM-DD).
@@ -65,7 +65,7 @@ export const normalizeCity = (city: string): Permit['city'] => {
   if (c.includes('arlington')) return 'Arlington';
   
   // Return as-is if it's a valid DFW city, otherwise default to Dallas
-  return city.trim() || 'Dallas';
+  return 'Dallas' as City;
 };
 
 /**

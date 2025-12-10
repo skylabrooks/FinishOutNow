@@ -139,83 +139,14 @@ export type { Coordinates } from './geocoding/GeocodingService';
 // ==========================================
 // CONVENIENCE BUNDLES
 // ==========================================
+// Note: Bundle objects removed to avoid circular reference issues during build
+// Import individual functions directly from this module instead
+// Example: import { matchesPreferences, clusterLeads } from './services/aiFeatures';
 
-/**
- * Complete pipeline bundle
- */
-export const AIFeatures = {
-  // Alerts
-  alerts: {
-    matchesPreferences,
-    processLeadsForAlerts,
-    filterLeadsByPreferences,
-    generateAlertSummary
-  },
-  
-  // Geospatial
-  geospatial: {
-    clusterLeads,
-    detectHotspots,
-    leadsToHeatmapPoints
-  },
-  
-  // Contractors
-  contractors: {
-    findMatchingContractor,
-    processLeadsForContractors,
-    calculatePerformance
-  },
-  
-  // Network
-  network: {
-    buildRelationshipGraph,
-    generateRecommendations,
-    getNetworkStats
-  },
-  
-  // Scoring
-  scoring: {
-    recomputeLeadScores,
-    getHighQualityLeads: importedGetHighQualityLeads,
-    computeLeadScore
-  },
-  
-  // Notifications
-  notifications: {
-    generateProspectList,
-    generateWeeklyDigest,
-    formatProspectListEmail
-  }
-};
-
-/**
- * Quick access to most commonly used functions
- */
-export const AIQuick = {
-  // Check if lead matches user preferences
-  matchLead: matchesPreferences,
-  
-  // Cluster leads geographically
-  cluster: clusterLeads,
-  
-  // Find contractor by name
-  findContractor: findMatchingContractor,
-  
-  // Get subcontractor recommendations
-  // Get high-quality leads
-  topLeads: importedGetHighQualityLeads
-  // Find contractor by name
-  findContractor: findMatchingContractor,
-  
-  // Predict project probability
-  predict: predictProjectProbability,
-  
-  // Compute lead score
-  score: computeLeadScore,
-  
-  // Get high-quality leads
-  topLeads: importedGetHighQualityLeads
-};
+// ==========================================
+// TYPES
+// ==========================================
+export type {
   AlertQueueItem,
   LeadCluster,
   Hotspot,
@@ -225,7 +156,7 @@ export const AIQuick = {
   SubcontractorRecommendation,
   ProspectListItem,
   ProjectProbability,
-  
+
   // Support types
   GeoFilter,
   ScoringThresholds,

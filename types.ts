@@ -1,5 +1,7 @@
 
 
+export type City = 'Dallas' | 'Fort Worth' | 'Plano' | 'Frisco' | 'Irving' | 'Arlington';
+
 export type PermitType = 'Commercial Remodel' | 'Certificate of Occupancy' | 'New Construction' | 'Utility Hookup' | 'Zoning Case' | 'Eviction Notice' | 'Health Permit' | 'Food Service Permit' | 'Liquor License' | 'Fire Alarm' | 'Incentive Announcement';
 
 export type ProjectStage = 'PRE_PERMIT' | 'PERMIT_APPLIED' | 'PERMIT_ISSUED' | 'UNDER_CONSTRUCTION' | 'FINAL_INSPECTION' | 'COMPLETE' | 'OCCUPANCY_PENDING' | 'CONCEPT' | 'PRE_OPENING';
@@ -11,7 +13,7 @@ export interface Permit {
   permitNumber: string;
   permitType: PermitType;
   address: string;
-  city: 'Dallas' | 'Fort Worth' | 'Plano' | 'Frisco' | 'Irving' | 'Arlington';
+  city: City;
   appliedDate: string;
   description: string;
   applicant: string;

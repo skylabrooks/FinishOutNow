@@ -4,7 +4,7 @@
  * This endpoint proxies requests to Dallas Open Data API,
  * resolving CORS issues and enabling server-side caching.
  * 
- * Usage: GET /api/permits-dallas?limit=20&offset=0
+ * Usage: GET /api/permits-dallas?limit=40&offset=0
  */
 
 interface DallasRawPermit {
