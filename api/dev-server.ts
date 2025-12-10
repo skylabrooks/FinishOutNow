@@ -165,6 +165,91 @@ async function handleFortWorthPermits(req: ApiRequest, res: ApiResponse) {
   }
 }
 
+// Handler for Arlington permits (ArcGIS)
+// Note: Arlington's public ArcGIS endpoints are not consistently available
+// This returns mock data as fallback until a reliable endpoint is found
+async function handleArlingtonPermits(req: ApiRequest, res: ApiResponse) {
+  if (req.method !== 'GET') {
+    res.status(405).json({ success: false, error: 'Method not allowed' });
+    return;
+  }
+
+  try {
+    console.log('[Arlington Proxy] Arlington ArcGIS endpoints not available - using mock data');
+    
+    // Return empty success - frontend will use mock data
+    res.status(200).json({
+      success: true,
+      data: [],
+      cached: false,
+      timestamp: Date.now(),
+      note: 'Arlington permits API not available - using mock data'
+    });
+
+  } catch (error: any) {
+    console.error('[Arlington Proxy] ✗ Error:', error?.message);
+    res.status(502).json({
+      success: false,
+      error: error?.message || 'Failed to fetch Arlington permits',
+      timestamp: Date.now()
+    });
+  }
+}
+
+// Handler for Irving permits (ArcGIS)
+async function handleIrvingPermits(req: ApiRequest, res: ApiResponse) {
+  if (req.method !== 'GET') {
+    res.status(405).json({ success: false, error: 'Method not allowed' });
+    return;
+  }
+
+  try {
+    const limit = req.query.limit || '20';
+    
+    // Use simpler query - just get all permits
+    const params = new URLSearchParams({
+      'where': '1=1',
+      'outFields': '*',
+      'f': 'json',
+      'resultRecordCount': limit
+    });
+
+    const endpoint = 'https://services.arcgis.com/s8c6cO82d6G13c8k/arcgis/rest/services/Permits/FeatureServer/0/query';
+    
+    console.log(`[Irving Proxy] Fetching from ArcGIS...`);
+    const response = await fetch(`${endpoint}?${params.toString()}`, {
+      headers: {
+        'Accept': 'application/json',
+        'User-Agent': 'FinishOutNow-Backend/1.0'
+      }
+    });
+
+    if (!response.ok) {
+      throw new Error(`Irving API Error: ${response.statusText} (${response.status})`);
+    }
+
+    const geoData = await response.json();
+    const data = geoData.features || [];
+    
+    console.log(`[Irving Proxy] ✓ Fetched ${data.length} permits`);
+
+    res.status(200).json({
+      success: true,
+      data,
+      cached: false,
+      timestamp: Date.now()
+    });
+
+  } catch (error: any) {
+    console.error('[Irving Proxy] ✗ Error:', error?.message);
+    res.status(502).json({
+      success: false,
+      error: error?.message || 'Failed to fetch Irving permits',
+      timestamp: Date.now()
+    });
+  }
+}
+
 // Create HTTP server
 const PORT = 3001;
 
@@ -213,6 +298,10 @@ const server = http.createServer(async (req, res) => {
     await handleDallasPermits(apiRequest, responseWrapper);
   } else if (pathname === '/api/permits-fortworth') {
     await handleFortWorthPermits(apiRequest, responseWrapper);
+  } else if (pathname === '/api/permits-arlington') {
+    await handleArlingtonPermits(apiRequest, responseWrapper);
+  } else if (pathname === '/api/permits-irving') {
+    await handleIrvingPermits(apiRequest, responseWrapper);
   } else if (pathname === '/api/send-email') {
     if ((req.method || '').toUpperCase() !== 'POST') {
       responseWrapper.status(405).json({ error: 'Method not allowed' });
@@ -245,6 +334,8 @@ server.listen(PORT, () => {
 Endpoints:
   GET /api/permits-dallas       → Dallas permits proxy
   GET /api/permits-fortworth    → Fort Worth permits proxy
+  GET /api/permits-arlington    → Arlington permits proxy
+  GET /api/permits-irving       → Irving permits proxy
   POST /api/send-email           → Mock email sender (local dev)
   GET /health                    → Health check
 

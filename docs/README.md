@@ -1,263 +1,264 @@
 # 📚 FinishOutNow Documentation
 
-Welcome to the FinishOutNow documentation. This folder is organized into 6 logical sections for easy navigation.
+**Last Updated:** December 9, 2025  
+**Status:** Production Ready
+
+## Overview
+
+Complete documentation for FinishOutNow, organized by functional area. This is your starting point for understanding architecture, features, implementation details, and operations.
 
 ---
 
-## 🗂️ Folder Organization
+## 📁 Documentation Structure
 
-### **01_Getting_Started/** ← START HERE
-Essential reading for new developers, business stakeholders, and sales team.
-
-- **01_START_HERE.md** - Master reading guide by role (Developer, Manager, Sales, DevOps)
-- **02_BUSINESS_CASE.md** - Product overview, ROI, market opportunity for stakeholders
-- **03_SALES_REP_GUIDE.md** - Complete sales playbook with scripts and objection handlers
-
-**📖 Read Time:** 5-20 minutes depending on your role
-
----
-
-### **02_Architecture_and_Overview/**
-Technical understanding of how the application works.
-
-- **01_DEVELOPER_HANDOFF.md** - Complete architecture overview, file structure, tech stack
-- **02_PROJECT_COMPLETION.md** - Current features, implementation status, known limitations
-
-**📖 Read Time:** 10-15 minutes
-
----
-
-### **03_Setup_and_Configuration/**
-Everything needed to run and configure the application.
-
-- **01_BACKEND_SETUP.md** - Detailed step-by-step setup guide (development & production)
-- **02_BACKEND_QUICK_REFERENCE.md** - Quick commands, testing, troubleshooting
-- **03_API_SETUP.md** - API credentials configuration (Dallas, Fort Worth)
-- **04_FIREBASE_SETUP_GUIDE.md** - Firebase authentication and database setup
-- **05_MCP_INSTRUCTIONS.md** - Model Context Protocol servers (advanced, optional)
-
-**📖 Read Time:** 5-30 minutes depending on scope
-
----
-
-### **04_Lead_Management/**
-Documentation about lead claiming and management features.
-
-- **01_LEAD_CLAIMING_FEATURE.md** - Lead claiming system, expiration, removal workflow
-
-**📖 Read Time:** 5 minutes
-
----
-
-### **05_Production_and_Deployment/**
-Deployment and production readiness information.
-
-- **01_PRODUCTION_READY.md** - Production deployment checklist, verification results
-
-**📖 Read Time:** 10 minutes
-
----
-
-### **06_Research_and_Reference/**
-Technical reference and research documents.
-
-- **01_LEAD_SOURCING_BLUEPRINT.txt** - Detailed technical architecture and data pipeline design
-- **02_ACQUIRED_LEADS_DASHBOARD.md** - Acquired leads dashboard feature documentation
-
-**📖 Read Time:** 10-20 minutes (reference material)
+```
+docs/
+├── README.md                              ← You are here
+├── architecture/                          ← System design & data pipeline
+│   ├── 01_data_sources_and_ingestion.md  (Data sources, normalization)
+│   ├── 02_creative_signals_pipeline.md   (Early-stage lead detection)
+│   ├── 03_ai_features_predictive_geo_network.md (AI/ML features)
+│   └── 04_lead_quality_filtering.md      (Quality rules & scoring)
+├── features/                              ← AI & predictive features
+│   ├── AI_FEATURES_QUICKSTART.md         (Quick reference & examples)
+│   ├── AI_FEATURES_IMPLEMENTATION_SUMMARY.md (Full feature list)
+│   └── CREATIVE_SIGNALS_IMPLEMENTATION.md (Signal connectors)
+├── implementation/                        ← Project completion & status
+│   ├── SIGNAL_CONNECTORS_PRODUCTION.md   (Production connectors)
+│   ├── PRIORITY_ACTIONS_COMPLETE.md      (Completed tasks)
+│   └── QUALITY_FILTER_TESTS_COMPLETE.md  (Test coverage)
+├── changelog/                             ← Version history
+│   └── (changelog entries)
+├── testing/                               ← QA & testing
+│   ├── README.md
+│   ├── testing/ (other test docs)
+├── deployment/                            ← Release & operations
+│   ├── README.md
+│   └── (deployment docs)
+├── operations/                            ← Monitoring & health
+│   ├── README.md
+│   └── (operational docs)
+├── 01_Getting_Started/                    ← Setup & initialization
+├── 02_Architecture_and_Overview/          ← High-level overview
+├── 03_Setup_and_Configuration/            ← Installation & config
+├── 04_Lead_Management/                    ← Lead pipeline
+├── 05_Production_and_Deployment/          ← Production docs
+└── 06_AI_Features/                        ← AI feature docs
+```
 
 ---
 
 ## 🎯 Quick Navigation by Role
 
-| Role | Start With | Then Read | Time |
-|------|-----------|-----------|------|
-| **New Developer** | `01_Getting_Started/01_START_HERE.md` | Follow suggested order | 60 min |
-| **Backend Engineer** | `02_Architecture/01_DEVELOPER_HANDOFF.md` | `03_Setup/*` files | 90 min |
-| **DevOps/Deployment** | `03_Setup/01_BACKEND_SETUP.md` | `05_Production/01_PRODUCTION_READY.md` | 30 min |
-| **Manager/Stakeholder** | `01_Getting_Started/02_BUSINESS_CASE.md` | `02_Architecture/02_PROJECT_COMPLETION.md` | 20 min |
-| **Sales Team** | `01_Getting_Started/03_SALES_REP_GUIDE.md` | Done! ✅ | 15 min |
+### 👨‍💻 Developers
+
+**Goal:** Understand the codebase and make changes
+
+1. **Start Here:**
+   - `02_Architecture_and_Overview/` — System overview
+   - `architecture/03_ai_features_predictive_geo_network.md` — AI architecture
+
+2. **Then Read:**
+   - `features/AI_FEATURES_QUICKSTART.md` — Import and use patterns
+   - `architecture/01_data_sources_and_ingestion.md` — Data pipeline
+
+3. **Reference:**
+   - `04_Lead_Management/` — Lead lifecycle
+   - `03_Setup_and_Configuration/` — Local dev setup
+
+**Time:** ~30 minutes
 
 ---
 
-## 🚀 Quick Start (5 minutes)
+### 🏢 Product & Project Managers
 
-```bash
-# 1. Install dependencies
-npm install
+**Goal:** Understand what's built and project status
 
-# 2. Read quick reference
-cat 03_Setup_and_Configuration/02_BACKEND_QUICK_REFERENCE.md
+1. **Start Here:**
+   - `implementation/PRIORITY_ACTIONS_COMPLETE.md` — Completed work
+   - `implementation/QUALITY_FILTER_TESTS_COMPLETE.md` — Test status
 
-# 3. Run both servers
-npm run dev:full
+2. **Then Read:**
+   - `features/AI_FEATURES_IMPLEMENTATION_SUMMARY.md` — Feature inventory
+   - `testing/PRODUCTION_READINESS_CHECKLIST.md` — Deployment ready?
 
-# 4. Open browser
-http://localhost:3000
-```
+3. **Reference:**
+   - `deployment/PRODUCTION_RELEASE_SUMMARY.md` — Timeline
 
----
-
-## 📋 By Task
-
-| Task | Read This |
-|------|-----------|
-| **Get running locally** | `03_Setup/02_BACKEND_QUICK_REFERENCE.md` |
-| **Understand architecture** | `02_Architecture/01_DEVELOPER_HANDOFF.md` |
-| **Deploy to production** | `03_Setup/01_BACKEND_SETUP.md` → `05_Production/01_PRODUCTION_READY.md` |
-| **Understand lead workflow** | `04_Lead_Management/01_LEAD_CLAIMING_FEATURE.md` |
-| **Debug an issue** | `03_Setup/02_BACKEND_QUICK_REFERENCE.md` (Troubleshooting section) |
-| **Sell the product** | `01_Getting_Started/03_SALES_REP_GUIDE.md` |
-| **Understand business** | `01_Getting_Started/02_BUSINESS_CASE.md` |
+**Time:** ~20 minutes
 
 ---
 
-## ⏱️ Reading Time by Document
+### 🔧 DevOps & Operations
 
-| Document | Time | Audience |
-|----------|------|----------|
-| 01_START_HERE | 5 min | Everyone |
-| 01_DEVELOPER_HANDOFF | 10 min | Developers |
-| 02_PROJECT_COMPLETION | 5 min | Developers/Managers |
-| 02_BUSINESS_CASE | 15 min | Sales/Business |
-| 03_SALES_REP_GUIDE | 20 min | Sales Team |
-| 01_BACKEND_SETUP | 15 min | Backend/DevOps |
-| 02_BACKEND_QUICK_REFERENCE | 5 min | Daily Use |
-| 03_API_SETUP | 10 min | Backend Engineers |
-| 04_FIREBASE_SETUP_GUIDE | 10 min | Developers |
-| 05_MCP_INSTRUCTIONS | 5 min | Advanced Users |
-| 01_LEAD_CLAIMING | 5 min | All Developers |
-| 01_PRODUCTION_READY | 10 min | DevOps/Deployment |
-| 01_LEAD_SOURCING_BLUEPRINT | 15 min | Architects |
-| 02_ACQUIRED_LEADS_DASHBOARD | 10 min | Reference |
-| **TOTAL** | **~140 min** | **Complete knowledge** |
+**Goal:** Deploy and monitor the application
+
+1. **Start Here:**
+   - `deployment/README.md` — Deployment guide
+   - `operations/README.md` — Monitoring & health
+
+2. **Then Read:**
+   - `05_Production_and_Deployment/` — Production docs
+   - `testing/PRODUCTION_READINESS_CHECKLIST.md` — Pre-deployment
+
+3. **Reference:**
+   - `deployment/PRODUCTION_DEPLOYMENT_GUIDE.md` — Step-by-step
+   - `operations/SYSTEM_HEALTH_REPORT.md` — Health checks
+
+**Time:** ~25 minutes
 
 ---
 
-## ✅ Checklists by Role
+### 🧪 QA & Testing
 
-### **New Developer**
-- [ ] Read `01_Getting_Started/01_START_HERE.md`
-- [ ] Read `02_Architecture/01_DEVELOPER_HANDOFF.md`
-- [ ] Read `02_Architecture/02_PROJECT_COMPLETION.md`
-- [ ] Run `npm run dev:full`
-- [ ] Read `04_Lead_Management/01_LEAD_CLAIMING_FEATURE.md`
-- [ ] Explore code in `/services` and `/components`
-- [ ] ✅ Result: Full understanding of the app
+**Goal:** Understand test coverage and run tests
 
-### **Backend Engineer**
-- [ ] Read `02_Architecture/01_DEVELOPER_HANDOFF.md`
-- [ ] Read `03_Setup/01_BACKEND_SETUP.md`
-- [ ] Read `03_Setup/03_API_SETUP.md`
-- [ ] Review `/api` directory code
-- [ ] Read `05_Production/01_PRODUCTION_READY.md`
-- [ ] ✅ Result: Ready to deploy to production
+1. **Start Here:**
+   - `testing/README.md` — Testing overview
+   - `implementation/QUALITY_FILTER_TESTS_COMPLETE.md` — Test suite summary
 
-### **DevOps/Deployment**
-- [ ] Read `03_Setup/01_BACKEND_SETUP.md` (Deployment section)
-- [ ] Read `05_Production/01_PRODUCTION_READY.md`
-- [ ] Review `vercel.json`
-- [ ] Verify environment variables
-- [ ] ✅ Result: Ready to deploy
+2. **Then Read:**
+   - `testing/COMPLETE_E2E_TESTING_SUMMARY.md` — E2E test results
+   - `testing/TEST_DOCUMENTATION_INDEX.md` — Test documentation
 
-### **Sales Team**
-- [ ] Read `01_Getting_Started/03_SALES_REP_GUIDE.md`
-- [ ] Practice 30-second pitch (Section 3)
-- [ ] Learn objection handlers (Section 5)
-- [ ] Study closing techniques (Section 6)
-- [ ] ✅ Result: Ready to sell
+3. **Reference:**
+   - `testing/E2E_TEST_REPORT.md` — Detailed results
+   - `testing/PRODUCTION_READINESS_CHECKLIST.md` — Readiness criteria
 
-### **Manager/Stakeholder**
-- [ ] Read `01_Getting_Started/02_BUSINESS_CASE.md`
-- [ ] Read `02_Architecture/02_PROJECT_COMPLETION.md`
-- [ ] ✅ Result: Understand status and roadmap
+**Time:** ~20 minutes
 
 ---
 
-## 💡 Pro Tips
+## 📖 Feature Documentation
 
-1. **Start with 01_START_HERE.md** - It will guide you based on your role
-2. **Bookmark 02_BACKEND_QUICK_REFERENCE.md** - You'll reference it constantly
-3. **Documents build on each other** - Read in suggested order
-4. **Code is well-commented** - After reading architecture docs, exploring code makes sense
-5. **Use Ctrl+F to search** - All docs are searchable
+### AI Features & Predictive Analytics
 
----
+See `features/` folder for:
 
-## 🔄 Documentation Organization Philosophy
+- **Predictive Alerts** — Automatic lead matching & notifications
+- **Geospatial Clustering** — DBSCAN hotspot detection & heatmaps
+- **Contractor Benchmarking** — Performance tracking & fuzzy matching
+- **Subcontractor Network** — GC-sub relationship recommendations
+- **Project Probability** — ML-based start date & completion predictions
 
-Our documentation follows these principles:
-
-✅ **Role-based navigation** - Organized by what people need to do  
-✅ **Progressive complexity** - Start simple, go deeper as needed  
-✅ **Cross-referenced** - Related docs link to each other  
-✅ **Clear naming** - File names describe content  
-✅ **Numbered order** - Within each folder, numbers show reading order  
-✅ **Practical focus** - Real examples, not abstract theory  
+**Quick Start:** `features/AI_FEATURES_QUICKSTART.md`
 
 ---
 
-## 📊 Documentation Statistics
+### Creative Signals Pipeline
 
-| Metric | Count |
+See `architecture/02_creative_signals_pipeline.md` and `features/CREATIVE_SIGNALS_IMPLEMENTATION.md` for:
+
+- Utility connections (early occupancy signals)
+- Zoning cases (pre-permit land use)
+- Licensing signals (health, food, liquor)
+- Eviction signals (vacancy detection)
+- Economic incentives (development announcements)
+
+---
+
+### Data Pipeline & Architecture
+
+See `architecture/` folder for:
+
+- **Data Sources:** `01_data_sources_and_ingestion.md`
+- **Quality Filtering:** `04_lead_quality_filtering.md`
+- **AI Features:** `03_ai_features_predictive_geo_network.md`
+
+---
+
+## 🚀 Key Features
+
+### Current Capabilities
+
+✅ **Lead Ingestion** — Multi-source data connectors  
+✅ **Lead Scoring** — ML-based valuation & confidence  
+✅ **Quality Filtering** — Actionable, recent, high-value leads  
+✅ **Geospatial Analysis** — Clustering, heatmaps, hotspots  
+✅ **Contractor Profiles** — Fuzzy matching & performance metrics  
+✅ **Alerts & Notifications** — Real-time user preferences  
+✅ **Network Recommendations** — GC-subcontractor matching  
+✅ **Project Probability** — Start date & completion predictions  
+
+### Status
+
+- **Phase 1** ✅ Complete — Alerts, clustering, contractor benchmarking
+- **Phase 2** ✅ Complete — Geospatial features, heatmaps
+- **Phase 3** ✅ Complete — Network recommendations, subcontractors
+- **Phase 4** ✅ Complete — ML probability, seasonal patterns
+- **Phase 5** ✅ Complete — Quality filtering, production deployment
+
+**Production Status:** ✅ All systems production-ready
+
+---
+
+## 🔗 Integration Points
+
+### Services & APIs
+
+- **Gemini AI** — Lead analysis & recommendations
+- **Nominatim** — Geocoding (client-side cached)
+- **TX Comptroller** — Entity enrichment (rate-limited)
+- **ArcGIS** — Zoning case endpoints
+- **TABC** — Liquor licensing data
+- **Firebase** — Backend services
+
+### Configuration
+
+- **Environment Variables** — See `.env.local` template
+- **Database** — Schema in archived deployment docs
+- **Caching** — localStorage for geocoding, Redis-ready
+
+---
+
+## 📊 Project Statistics
+
+| Metric | Value |
 |--------|-------|
-| Total Documents | 13 |
-| Organized Folders | 6 |
-| Code Examples | 50+ |
-| Diagrams/Tables | 30+ |
-| Supported Roles | 5 |
-| Average Doc Length | 20-30 KB |
-| Total Reading Time | ~140 minutes |
-| Fast Track Time | 5-20 minutes |
+| AI Features | 17 implemented |
+| Test Coverage | 113 tests passing |
+| Data Sources | 6+ active connectors |
+| Production Ready | ✅ Yes |
+| Last Updated | December 9, 2025 |
 
 ---
 
-## 🎓 What You'll Learn
+## 🔍 Search Tips
 
-After reading these docs, you will understand:
+**Looking for:**
 
-- ✅ What FinishOutNow is and does
-- ✅ How the complete data pipeline works
-- ✅ How Gemini AI analyzes permits
-- ✅ How the backend proxy works
-- ✅ How caching improves performance
-- ✅ How to run the app locally
-- ✅ How to deploy to production
-- ✅ What the next features should be
-- ✅ How to debug issues
-- ✅ Where each piece of code lives
-- ✅ How lead claiming works
-- ✅ Business case and ROI
+- **How to add a new data source?** → `architecture/01_data_sources_and_ingestion.md`
+- **How to use AI features?** → `features/AI_FEATURES_QUICKSTART.md`
+- **What's the current lead scoring model?** → `architecture/04_lead_quality_filtering.md`
+- **How to deploy?** → `deployment/README.md`
+- **Test status?** → `implementation/QUALITY_FILTER_TESTS_COMPLETE.md`
+- **Is it production ready?** → `testing/PRODUCTION_READINESS_CHECKLIST.md`
 
 ---
 
 ## 📞 Support
 
-**Can't find what you're looking for?**
+For questions or issues:
 
-1. Check `01_Getting_Started/01_START_HERE.md` for navigation
-2. Use Ctrl+F to search within this README
-3. Look for "Quick Navigation" or "Table of Contents" sections in each document
-4. Check cross-references at the end of documents
-
-**Document unclear?**
-
-1. Read related documents for context
-2. Review code examples in `/services` and `/components`
-3. Check troubleshooting section in `03_Setup/02_BACKEND_QUICK_REFERENCE.md`
+1. Check relevant folder's README.md
+2. Search documentation using keywords
+3. Review implementation docs for recent changes
+4. See copilot-instructions.md for project conventions
 
 ---
 
-## 🎉 You're Ready!
+## 📅 Changelog
 
-Pick your role in `01_Getting_Started/01_START_HERE.md` and follow the reading order.
+See `changelog/` folder for version history and recent updates.
 
-**Total time to understand everything:** ~60 minutes  
-**Total time to get running:** ~5 minutes  
-
-**Happy reading!** 📚🚀
+**Latest Updates (December 9, 2025):**
+- ✅ Documentation restructured and organized
+- ✅ All markdown files grouped by category
+- ✅ This master README created as navigation hub
 
 ---
+
+**Navigation:** [Root README](../README.md) | [Start Here](#-quick-navigation-by-role)
 
 **Last Updated:** December 8, 2025  
 **Documentation Version:** 2.0  

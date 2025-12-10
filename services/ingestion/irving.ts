@@ -5,78 +5,65 @@ import { normalizeDate, normalizeStatus, normalizePermitType } from '../normaliz
 // Minimum valuation threshold per 01_data_sources_and_ingestion.md
 const MIN_VALUATION = 50000;
 
-// Irving Open Data / ArcGIS Feature Server
-// Endpoint logic based on standard ArcGIS REST API patterns
-const IRVING_API_ENDPOINT = 'https://services.arcgis.com/s8c6cO82d6G13c8k/arcgis/rest/services/Permits/FeatureServer/0/query';
+// Use API proxy endpoint (resolves CORS issues)
+const PROXY_ENDPOINT = '/api/permits-irving';
+
+interface IrvingProxyResponse {
+  success: boolean;
+  data?: any[];
+  error?: string;
+  cached?: boolean;
+}
 
 export const fetchIrvingPermits = async (): Promise<Permit[]> => {
   try {
-    // Construct ArcGIS Query params
-    const params = new URLSearchParams({
-      where: "(PERMITTYPE LIKE '%Commercial%' OR PERMITTYPE LIKE '%Remodel%' OR PERMITTYPE LIKE '%Occupancy%') AND STATUS = 'Issued'",
-      outFields: '*',
-      orderByFields: 'ISSUEDDATE DESC',
-      f: 'json',
-      resultRecordCount: '20'
-    });
+    // Try proxy first (production-ready)
+    const response = await fetch(`${PROXY_ENDPOINT}?limit=20`).catch(() => null);
 
-    // In a browser environment, ArcGIS servers often block generic requests without a token or specific Referer.
-    // If this fails, we return a fallback set to ensure the app works.
-    let data;
-    try {
-        const response = await fetch(`${IRVING_API_ENDPOINT}?${params.toString()}`);
-        if (response.ok) {
-             data = await response.json();
-        } else {
-            throw new Error("API Unreachable");
-        }
-    } catch (e) {
-        // Fallback for demo
-        data = { features: [] };
-        console.log("Irving API unreachable (CORS/Auth), using fallback.");
+    if (response?.ok) {
+      const proxyData: IrvingProxyResponse = await response.json();
+      if (proxyData.success && proxyData.data && proxyData.data.length > 0) {
+        console.log(`[Irving] Fetched ${proxyData.data.length} permits via proxy`);
         
-        // Mock Irving Data
-        return [
-            {
-                id: 'IRV-24-9921',
-                permitNumber: '24-9921',
-                permitType: 'Commercial Remodel',
-                address: '500 W LAS COLINAS BLVD',
-                city: 'Irving',
-                appliedDate: new Date().toISOString().split('T')[0],
-                description: 'Remodel of Suite 200 for Williams & Co. New lighting and data cabling.',
-                applicant: 'Las Colinas Construction',
-                valuation: 225000,
-                status: 'Issued',
-                dataSource: 'Irving Open Data'
-            }
-        ] as Permit[];
+        return proxyData.data
+          .map((feature: any) => {
+            const attrs = feature.attributes || feature;
+            const valuation = Number(attrs.VALUATION || attrs.valuation || 0);
+            return {
+              id: `IRV-${attrs.PERMITNUMBER || attrs.OBJECTID || Math.random()}`,
+              permitNumber: attrs.PERMITNUMBER || String(attrs.OBJECTID) || 'N/A',
+              permitType: normalizePermitType(attrs.PERMITTYPE, attrs.DESCRIPTION),
+              address: attrs.ADDRESS || attrs.LOCATION || 'Address Not Listed',
+              city: 'Irving' as const,
+              appliedDate: normalizeDate(attrs.ISSUEDDATE || attrs.APPLIEDDATE),
+              description: attrs.DESCRIPTION || attrs.PROJECTNAME || 'Commercial Project',
+              applicant: attrs.APPLICANT || attrs.CONTRACTOR || 'Unknown',
+              valuation,
+              status: normalizeStatus(attrs.STATUS),
+              dataSource: 'Irving Open Data (Live)'
+            } as Permit;
+          })
+          .filter(p => p.valuation >= MIN_VALUATION);
+      }
     }
 
-    if (!data.features) return [];
-
-    // Filter by minimum valuation and map to internal format
-    return data.features
-      .filter((feature: any) => {
-        const attrs = feature.attributes;
-        return (attrs.VALUATION || 0) >= MIN_VALUATION;
-      })
-      .map((feature: any) => {
-      const attrs = feature.attributes;
-      return {
-        id: `IRV-${attrs.PERMITNUMBER || attrs.OBJECTID}`,
-        permitNumber: attrs.PERMITNUMBER || String(attrs.OBJECTID),
-        permitType: normalizePermitType(attrs.PERMITTYPE, attrs.DESCRIPTION),
-        address: attrs.ADDRESS || attrs.LOCATION || 'Address Not Listed',
+    // Fallback to mock data if proxy unavailable
+    console.log('[Irving] Proxy unavailable, using mock data');
+    return [
+      {
+        id: 'IRV-24-9921',
+        permitNumber: '24-9921',
+        permitType: 'Commercial Remodel',
+        address: '500 W LAS COLINAS BLVD',
         city: 'Irving',
-        appliedDate: normalizeDate(attrs.ISSUEDDATE || attrs.APPLIEDDATE),
-        description: attrs.DESCRIPTION || attrs.PROJECTNAME || 'Commercial Project',
-        applicant: attrs.APPLICANT || attrs.CONTRACTOR || 'Unknown',
-        valuation: attrs.VALUATION || 0,
-        status: normalizeStatus(attrs.STATUS),
-        dataSource: 'Irving Open Data'
-      };
-    });
+        appliedDate: new Date().toISOString().split('T')[0],
+        description: 'Remodel of Suite 200. New lighting and data cabling.',
+        applicant: 'Las Colinas Construction',
+        valuation: 225000,
+        status: 'Issued',
+        dataSource: 'Irving Open Data (Mock)'
+      }
+    ] as Permit[];
 
   } catch (error) {
     console.warn('Failed to fetch Irving permits:', error);

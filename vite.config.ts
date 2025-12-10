@@ -18,6 +18,14 @@ export default defineConfig(({ mode }) => {
           '/api/permits-fortworth': {
             target: 'http://localhost:3001',
             changeOrigin: true,
+          },
+          '/api/permits-arlington': {
+            target: 'http://localhost:3001',
+            changeOrigin: true,
+          },
+          '/api/permits-irving': {
+            target: 'http://localhost:3001',
+            changeOrigin: true,
           }
         }
       },

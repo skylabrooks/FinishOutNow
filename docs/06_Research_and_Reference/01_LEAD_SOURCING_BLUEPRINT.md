@@ -53,16 +53,16 @@ The City of Dallas is the anchor of the regional ecosystem and possesses the mos
 2.1 The Building Permits API (Socrata)
 The primary feed for construction intent is the Building Permits dataset. This dataset is updated daily and serves as the "early warning system" for new project activity.
 
-Dataset Identifier: e7gq-4sah.   
+Dataset Identifier: e7gq-4sah.
 
-API Endpoint: https://www.dallasopendata.com/resource/e7gq-4sah.json.   
+API Endpoint: https://www.dallasopendata.com/resource/e7gq-4sah.json.
 
 Protocol: SODA (Socrata Open Data API) v2.1.
 
 2.1.1 Critical Schema Analysis
 Understanding the specific fields returned by this API is crucial for filtering noise (e.g., fence repairs) from signal (e.g., commercial finish-outs).
 
-1. Permit Type (permit_type)  This text field allows for the initial categorization of leads. The application must implement a filter logic to ingest only relevant types.   
+1. Permit Type (permit_type)  This text field allows for the initial categorization of leads. The application must implement a filter logic to ingest only relevant types.
 
 High-Value Values:
 
@@ -80,19 +80,19 @@ Building (BU) Single Family Alteration (unless targeting residential retail).
 
 Barricade, Fence, Driveway, Pool, Demolition.
 
-2. Work Description (work_description)  This is the most valuable field for AI processing. It contains the raw narrative entered by the applicant.   
+2. Work Description (work_description)  This is the most valuable field for AI processing. It contains the raw narrative entered by the applicant.
 
 Examples: "INTERIOR FINISH OUT FOR STARBUCKS" or "SHELL BUILDING FOR FUTURE RETAIL".
 
 Strategy: This field should be ingested raw and passed immediately to the AI Enrichment layer for parsing (discussed in Section 6).
 
-3. Valuation (value)  The declared value of the construction job.   
+3. Valuation (value)  The declared value of the construction job.
 
 Validation: Note that this is "declared" value, which is often understated to minimize permit fees. The system should treat this as a minimum floor rather than an accurate budget.
 
 Filtering: Implement a minimum threshold (e.g., $50,000) for commercial lead generation to filter out minor repairs.
 
-4. Contractor Details (contractor)  The name of the general contractor or applicant.   
+4. Contractor Details (contractor)  The name of the general contractor or applicant.
 
 Data Quality: This field is prone to dirty data (e.g., "ABC CONST.", "ABC CONSTRUCTION LLC", "A.B.C. CONSTRUCTION").
 
@@ -112,16 +112,16 @@ Step 3: Sort by issued_date ASC to ensure sequential processing.
 2.2 The Certificate of Occupancy (CO) API
 While permits track construction, Certificates of Occupancy track tenancy. This distinction is critical for service providers (ISPs, Movers, Security) who need to know when a business is physically moving in.
 
-Dataset Identifier: 9qet-qt9e.   
+Dataset Identifier: 9qet-qt9e.
 
-API Endpoint: https://www.dallasopendata.com/resource/9qet-qt9e.json.   
+API Endpoint: https://www.dallasopendata.com/resource/9qet-qt9e.json.
 
 2.2.1 Business Logic for COs
-The City of Dallas requires a CO for any "Change of Use" or "Change of Tenant". This means a CO dataset captures leads that the Permit dataset misses entirely—specifically, businesses taking over existing spaces "as-is" without doing construction work.   
+The City of Dallas requires a CO for any "Change of Use" or "Change of Tenant". This means a CO dataset captures leads that the Permit dataset misses entirely—specifically, businesses taking over existing spaces "as-is" without doing construction work.
 
 Key Fields for Segmentation:
 
-type_of_co: Differentiates the nature of the occupancy.   
+type*of*co: Differentiates the nature of the occupancy.
 
 CO-New Building: Correlates with a "Finaled" Building Permit.
 
@@ -129,29 +129,29 @@ CO-Change of Name: Usually a rebranding; low value for construction, high value 
 
 CO-Clean & Show: Indicates a landlord preparing a vacant space; implies a future lease opportunity.
 
-land_use: The zoning classification (e.g., OFFICE, RETAIL, RESTAURANT).   
+land_use: The zoning classification (e.g., OFFICE, RETAIL, RESTAURANT).
 
 Mapping: This field allows the app to offer industry-specific subscriptions (e.g., "Send me only Restaurant leads").
 
 2.3 Legacy Data for Modeling
-For training the AI models (e.g., predicting how long a project takes from Permit to CO), historical data is required. Dallas maintains archival datasets (e.g., azf5-sdcr for FY 2011-2012). Ingesting these archives allows the system to build historical "Contractor Profiles," scoring them on their past velocity and project volume.   
+For training the AI models (e.g., predicting how long a project takes from Permit to CO), historical data is required. Dallas maintains archival datasets (e.g., azf5-sdcr for FY 2011-2012). Ingesting these archives allows the system to build historical "Contractor Profiles," scoring them on their past velocity and project volume.
 
 3. Core Ingestion: City of Fort Worth
 Fort Worth operates a distinct data ecosystem. While they publish to Socrata, their primary infrastructure is built on Esri's ArcGIS Server, reflecting a more geospatial-centric approach to data management.
 
 3.1 Development Permits: The ArcGIS/BLDS Hybrid
-Fort Worth’s data schema partially aligns with the Building Land Development Specification (BLDS), a data standard attempting to unify permit schemas.   
+Fort Worth’s data schema partially aligns with the Building Land Development Specification (BLDS), a data standard attempting to unify permit schemas.
 
-Primary Source: CFW Development Permits.   
+Primary Source: CFW Development Permits.
 
 API Endpoint (ArcGIS): FeatureServer URL accessible via the Fort Worth Open Data Hub.
 
-API Endpoint (Socrata Mirror): https://data.fortworthtexas.gov/resource/qy5k-jz7m.json.   
+API Endpoint (Socrata Mirror): https://data.fortworthtexas.gov/resource/qy5k-jz7m.json.
 
 3.1.1 Schema Mapping and Normalization
 Fort Worth’s schema differs significantly from Dallas. The system’s "Normalization Engine" must handle these discrepancies.
 
-The Permit_Type Hierarchy : Fort Worth uses a two-level classification system:   
+The Permit_Type Hierarchy : Fort Worth uses a two-level classification system:
 
 Permit_Type: High-level category (e.g., "Commercial", "Residential").
 
@@ -163,7 +163,7 @@ Fort Worth Fields	Internal Normalized Ontology
 Type: Commercial + SubType: New	COMMERCIAL_NEW
 Type: Commercial + SubType: Remodel	COMMERCIAL_ALTERATION
 Type: Residential + SubType: New	RESIDENTIAL_NEW
-Status Workflow Logic : Unlike Dallas, which often removes or archives permits, Fort Worth maintains a lifecycle status in the live table.   
+Status Workflow Logic : Unlike Dallas, which often removes or archives permits, Fort Worth maintains a lifecycle status in the live table.
 
 Status: Applied: Pre-permit lead (similar to Arlington).
 
@@ -173,40 +173,40 @@ Status: Finaled: Completed project.
 
 Status: Expired: Abandoned project.
 
-Filter Requirement: The ingestion query must explicitly filter for Status IN ('Applied', 'Issued') to avoid polluting the database with dead or completed projects.
+Filter Requirement: The ingestion query must explicitly filter for Status IN (*Applied*, *Issued*) to avoid polluting the database with dead or completed projects.
 
 3.1.2 Spatial Ingestion Strategies
-Fort Worth provides data as both "Points" (FeatureService) and "Tables".   
+Fort Worth provides data as both "Points" (FeatureService) and "Tables".
 
 Recommendation: Use the Table endpoint for bulk ingestion of text attributes (faster, less payload overhead).
 
 Augmentation: Use the Points endpoint only if the Table endpoint lacks geocoordinates. Ingesting GeoJSON allows the application to perform spatial queries, such as "Show all active permits within the Near Southside Medical District."
 
 3.2 Certificate of Occupancy Integration
-Fort Worth publishes a dedicated CFW Certificates of Occupancy Table.   
+Fort Worth publishes a dedicated CFW Certificates of Occupancy Table.
 
-Update Frequency: Hourly.   
+Update Frequency: Hourly.
 
 Data Nuance: Similar to Dallas, this captures business turnover. However, Fort Worth’s description fields are often terser.
 
 Cross-City Normalization: The land_use codes in Fort Worth (e.g., A-2 for Assembly/Restaurants) differ from Dallas codes. The Normalization Engine must maintain a lookup table to map standard International Building Code (IBC) occupancy classes (A, B, E, M, R) to user-friendly categories ("Restaurant", "Office", "School", "Retail", "Residential").
 
 4. The "Golden Hour": Arlington’s Permit Applications
-Arlington provides a unique competitive advantage: distinct datasets for Permit Applications versus Issued Permits.   
+Arlington provides a unique competitive advantage: distinct datasets for Permit Applications versus Issued Permits.
 
 4.1 Capturing Pre-Approval Leads
 Most lead services wait for a permit to be issued. By the time a permit is issued, the General Contractor (GC) has likely already selected their primary subcontractors. The "Golden Hour" for bidding is during the application phase.
 
-Dataset: Permit Applications.   
+Dataset: Permit Applications.
 
 API Type: ArcGIS FeatureService.
 
-Lifecycle Logic: The City of Arlington explicitly states that "Once a permit has been issued, it will be removed from this dataset and appear in the 'Issued Permits' dataset".   
+Lifecycle Logic: The City of Arlington explicitly states that "Once a permit has been issued, it will be removed from this dataset and appear in the *Issued Permits* dataset".
 
 4.1.2 Ingestion Workflow
 Monitor: Poll the Permit Applications endpoint daily.
 
-Filter: Target STATUSDESC values like Application Incomplete, In Review, or Payment Pending.   
+Filter: Target STATUSDESC values like Application Incomplete, In Review, or Payment Pending.
 
 Alerting: Trigger "Early Bird" alerts to users. For example, an architect or expeditor can reach out to an applicant whose status is "Incomplete" to offer assistance in fixing the plans.
 
@@ -214,7 +214,7 @@ Tracking: Store the FOLDERSEQUENCE (Unique ID). Periodically check the Issued Pe
 
 Key Attributes for Arlington:
 
-FOLDERNAME: Represents the Project Address/Name.   
+FOLDERNAME: Represents the Project Address/Name.
 
 ConstructionValuationDeclared: The project value.
 
@@ -224,13 +224,13 @@ MainUse / LandUseDescription: Used for categorization.
 While Dallas, Fort Worth, and Arlington cover the urban core, the high-growth suburbs (Frisco, Plano, Irving, McKinney) operate on different, often less open, systems. Addressing this fragmentation is the most technically challenging aspect of the ALSE.
 
 5.1 The "My Government Online" (MGO) Challenge
-Many Texas municipalities, including Irving, Harker Heights, and Cedar Park, utilize My Government Online (MGO) (also known as MGO Connect) as their backend permitting SaaS.   
+Many Texas municipalities, including Irving, Harker Heights, and Cedar Park, utilize My Government Online (MGO) (also known as MGO Connect) as their backend permitting SaaS.
 
-The Problem: MGO is a user portal, not an Open Data publisher. It does not offer a documented public API for bulk data extraction. The Strategy:   
+The Problem: MGO is a user portal, not an Open Data publisher. It does not offer a documented public API for bulk data extraction. The Strategy:
 
 Official Derivative Feeds: Before scraping, check if the city publishes MGO data elsewhere.
 
-Irving: The City of Irving extracts MGO data and publishes it to their own ArcGIS Hub as Commercial Permits Issued. This is the clean, legal, and stable path.   
+Irving: The City of Irving extracts MGO data and publishes it to their own ArcGIS Hub as Commercial Permits Issued. This is the clean, legal, and stable path.
 
 Ingestion: Treat Irving’s ArcGIS feed exactly like Fort Worth’s, mapping columns to the standard schema.
 
@@ -238,18 +238,18 @@ Headless Automation (The "Last Resort"): For cities that use MGO but don't repub
 
 Tooling: Use Python with Selenium or Playwright.
 
-Target: The "Permit Search" interface.   
+Target: The "Permit Search" interface.
 
 Logic: Script a bot to select the Jurisdiction, set a Date Range (e.g., "Last 7 Days"), and iterate through result pages.
 
 Risk: This method is brittle (UI changes break the bot) and legally grey. It should be used sparingly and rate-limited to avoid IP bans.
 
 5.2 Plano’s Static Reporting
-The City of Plano takes a low-tech approach, publishing data via Weekly Excel Reports.   
+The City of Plano takes a low-tech approach, publishing data via Weekly Excel Reports.
 
 Source: Plano Building Inspections Reports webpage.
 
-Datasets: Commercial Building, Interior Finish Out, Certificate of Occupancy.   
+Datasets: Commercial Building, Interior Finish Out, Certificate of Occupancy.
 
 Ingestion Pipeline for Static Files:
 
@@ -261,7 +261,7 @@ Download & Parse: Downloads the .xlsx files.
 
 Schema Normalization: Plano’s Excel columns often drift (e.g., headers changing rows). The parser must be robust, looking for keyword anchors (e.g., "Valuation", "Contractor") rather than fixed cell coordinates.
 
-Special Value: Plano explicitly separates "Interior Finish Out" reports. This is a massive value-add for interior-focused trades (flooring, painting, glass) who often struggle to find these projects buried in generic "Remodel" permits in other cities.   
+Special Value: Plano explicitly separates "Interior Finish Out" reports. This is a massive value-add for interior-focused trades (flooring, painting, glass) who often struggle to find these projects buried in generic "Remodel" permits in other cities.
 
 6. Entity Resolution and State-Level Enrichment
 A raw permit provides a business name (e.g., "Dallas Real Estate Holdings LLC"), which is often an opaque shell company. To turn this into a lead, the system must identify the people behind the entity.
@@ -269,11 +269,11 @@ A raw permit provides a business name (e.g., "Dallas Real Estate Holdings LLC"),
 6.1 Texas Comptroller Integration (The Truth Layer)
 The Texas Comptroller of Public Accounts provides the authoritative registry for all taxable entities in the state.
 
-API: Franchise Tax Account Status (FTAS) API.   
+API: Franchise Tax Account Status (FTAS) API.
 
-Endpoint: https://api.comptroller.texas.gov/public-data/v1/public/franchise-tax-list.   
+Endpoint: https://api.comptroller.texas.gov/public-data/v1/public/franchise-tax-list.
 
-Auth: API Key required.   
+Auth: API Key required.
 
 The Enrichment Workflow:
 
@@ -287,18 +287,18 @@ Extraction: Retrieve critical metadata:
 
 taxpayerId: The unique State ID.
 
-right_to_transact_business: Verifies the lead is active (not defunct).   
+right*to*transact_business: Verifies the lead is active (not defunct).
 
 mailingAddress: This is the crucial "Golden Record" address. It tells you where the company HQ is, allowing for direct mail marketing, distinct from the construction site address returned by the city.
 
 6.2 County Clerk "Assumed Names" (DBA)
 For smaller contractors (Sole Proprietorships), the business might be registered as an "Assumed Name" (DBA) at the county level rather than the state.
 
-Fragmentation: Each county (Dallas, Tarrant, Collin) maintains a separate database.   
+Fragmentation: Each county (Dallas, Tarrant, Collin) maintains a separate database.
 
 Technical Limit: These are search portals, not APIs. Dallas County requires manual CAPTCHA solving or physical visits for some records.
 
-Strategy: Automated retrieval here is high-effort, low-yield. The recommendation is to flag these entities as "Unverified Sole Proprietorships" in the UI and provide deep-links to the respective County Clerk search pages  for the user to investigate manually.   
+Strategy: Automated retrieval here is high-effort, low-yield. The recommendation is to flag these entities as "Unverified Sole Proprietorships" in the UI and provide deep-links to the respective County Clerk search pages  for the user to investigate manually.
 
 7. The Intelligence Layer: AI and Predictive Scoring
 The raw aggregation of data is a commodity. The competitive differentiation of this ALSE lies in its AI-driven intelligence layer.
@@ -322,7 +322,7 @@ tenant_name: (Extract name or return null)
 
 industry_vertical: (Medical, Retail, Office, Industrial, Residential)
 
-specific_trades_implied: (List: e.g., 'Plumbing' if grease trap mentioned, 'Electrical' if service upgrade mentioned)"
+specific*trades*implied: (List: e.g., *Plumbing* if grease trap mentioned, *Electrical* if service upgrade mentioned)"
 
 Outcome: The raw string "TEN FIN OUT STE 200 MED OFFICE DR SMITH" is transformed into structured tags: {Intent: Remodel, Tenant: Dr. Smith, Vertical: Medical}. This enables powerful filters like "Show me all Medical Remodels," which is impossible with standard city data.
 
@@ -345,14 +345,14 @@ While the "Free-First" strategy covers 80-90% of the market volume, specific gap
 8.1 BuildZoom (The "Hard-to-Reach" Backfill)
 Capability: BuildZoom operates a massive scraping infrastructure that covers obscure municipalities globally.
 
-Integration: Use the BuildZoom API  as a waterfall fallback. If a user searches for leads in a small enclave (e.g., Highland Park) where no open data exists, the system can query BuildZoom.   
+Integration: Use the BuildZoom API  as a waterfall fallback. If a user searches for leads in a small enclave (e.g., Highland Park) where no open data exists, the system can query BuildZoom.
 
-Verification: BuildZoom also aggregates contractor license data. If the Texas Comptroller search fails, querying the BuildZoom Contractor API can verify a license number.   
+Verification: BuildZoom also aggregates contractor license data. If the Texas Comptroller search fails, querying the BuildZoom Contractor API can verify a license number.
 
 8.2 ConstructConnect & Dodge (The Blueprint Source)
 Limitation: Open data portals provide data, not documents. They rarely host the actual PDF blueprints/plans due to copyright and security.
 
-Partnership Model: Platforms like ConstructConnect and Dodge Data specialize in hosting "Plan Rooms".   
+Partnership Model: Platforms like ConstructConnect and Dodge Data specialize in hosting "Plan Rooms".
 
 Implementation: Do not attempt to scrape these sites (illegal/TOS violation). Instead, position the ALSE as the "Lead Generator" and refer users to these platforms for the "Take-off" (estimating) phase. If the user has a ConstructConnect subscription, the app could potentially link to the project via common identifiers (Project Address).
 

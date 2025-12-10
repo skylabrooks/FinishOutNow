@@ -79,96 +79,19 @@ export const fetchLegalVacancySignals = async (): Promise<Permit[]> => {
   const signals: Permit[] = [];
   
   try {
-    // Eviction Lab CSV endpoint (example - adjust based on actual data structure)
-    // Real endpoint may vary - Eviction Lab updates their data structure periodically
-    // Alternative: Use local CSV cache updated via scheduled job
+    // Eviction Lab no longer provides direct CSV downloads
+    // Their data is now accessed through their interactive tools at evictionlab.org
+    // Alternative approach: Use county court record APIs if available
+    // For now, returning empty array with informative log
     
-    const EVICTION_LAB_CSV_URL = 'https://evictionlab.org/uploads/texas_weekly.csv';
+    console.log('[Legal Vacancy] Eviction Lab CSV no longer publicly available');
+    console.log('[Legal Vacancy] Consider implementing: 1) County court record scraper, 2) Commercial eviction monitoring service');
     
-    console.log('[Legal Vacancy] Fetching Eviction Lab CSV data...');
-    
-    const response = await fetch(EVICTION_LAB_CSV_URL, {
-      headers: {
-        'Accept': 'text/csv'
-      }
-    }).catch((err) => {
-      console.error('[Legal Vacancy] Fetch error:', err.message);
-      return null;
-    });
-    
-    if (!response || !response.ok) {
-      console.warn(`[Legal Vacancy] Eviction Lab CSV unavailable (${response?.status || 'network error'})`);
-      console.warn('[Legal Vacancy] Consider implementing local CSV cache updated via scheduled job');
-      return [];
-    }
-    
-    const csvText = await response.text();
-    const records = parseCSV(csvText);
-    
-    console.log(`[Legal Vacancy] Retrieved ${records.length} eviction records`);
-    
-    // Filter and process eviction records
-    const dockets: EvictionDocket[] = [];
-    
-    for (const record of records) {
-      // Expected CSV columns (adjust based on actual Eviction Lab format):
-      // - case_id, filing_date, address, city, county, case_type
-      const address = record.address || record.property_address || '';
-      const county = record.county || 'Dallas';
-      const filingDate = record.filing_date || record.date || new Date().toISOString();
-      
-      // Skip if no address
-      if (!address || address.length < 10) continue;
-      
-      // Determine if commercial based on address patterns
-      const isCommercial = isLikelyCommercial(address);
-      
-      // Map county to cities
-      const cities = getCitiesForCounty(county);
-      
-      // Create docket entry for each city in county (we'll pick the first city as primary)
-      dockets.push({
-        id: record.case_id || record.id || Math.random().toString(36),
-        address: address,
-        city: cities[0], // Use first city as primary
-        filedDate: filingDate,
-        isCommercial: isCommercial,
-        description: `Eviction filed in ${county} County`
-      });
-    }
-    
-    // Filter for commercial properties only (per pipeline requirements)
-    const commercialDockets = dockets.filter(d => d.isCommercial);
-    
-    console.log(`[Legal Vacancy] Filtered to ${commercialDockets.length} commercial evictions (from ${dockets.length} total)`);
-    
-    // Convert to permit signals
-    for (const docket of commercialDockets) {
-      signals.push({
-        id: `eviction_${docket.id}`,
-        permitNumber: `EV_${docket.id}`,
-        permitType: 'Eviction Notice',
-        address: docket.address,
-        city: docket.city,
-        appliedDate: docket.filedDate,
-        description: `Legal vacancy signal: Commercial eviction filed (potential space availability)`,
-        applicant: 'Legal System',
-        valuation: 0, // Evictions don't have valuations
-        status: 'Under Review' as const,
-        dataSource: 'Eviction Lab',
-        stage: 'CONCEPT',
-      });
-    }
+    // Return empty - this signal source requires alternative implementation
+    return [];
     
   } catch (error) {
     console.error('[Legal Vacancy] Error processing eviction data:', error);
+    return [];
   }
-  
-  // ===== ALTERNATIVE: North Texas Eviction Project (NTEP) =====
-  // NTEP provides real-time dashboard but no public API
-  // Consider scraping if Eviction Lab data is stale:
-  // URL: https://childpovertyactionlab.org/north-texas-eviction-project/
-  
-  console.log(`[Legal Vacancy] Total signals: ${signals.length}`);
-  return signals;
 };

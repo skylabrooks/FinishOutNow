@@ -43,11 +43,12 @@ export const fetchLicensingSignals = async (): Promise<Permit[]> => {
     
     const oneYearAgo = new Date();
     oneYearAgo.setFullYear(oneYearAgo.getFullYear() - 1);
+    // TABC date field is numeric YYYYMMDD format - don't quote it
     const dateFilter = oneYearAgo.toISOString().split('T')[0].replace(/-/g, '');
     
     const params = new URLSearchParams({
       '$limit': '200',
-      '$where': `(${cityFilter}) AND obligation_end_date_yyyymmdd > '${dateFilter}'`,
+      '$where': `(${cityFilter}) AND obligation_end_date_yyyymmdd > ${dateFilter}`,
       '$order': 'obligation_end_date_yyyymmdd DESC'
     });
 
@@ -120,7 +121,9 @@ export const fetchLicensingSignals = async (): Promise<Permit[]> => {
 
   // ===== DALLAS FOOD INSPECTIONS =====
   try {
-    const DALLAS_FOOD_ENDPOINT = 'https://www.dallasopendata.com/resource/d57v-xk48.json';
+    // Dallas Food Inspections - current dataset ID (verify at dallasopendata.com)
+    // Alternative dataset: 5zpr-tnby (Restaurant and Food Establishment Inspections)
+    const DALLAS_FOOD_ENDPOINT = 'https://www.dallasopendata.com/resource/5zpr-tnby.json';
     
     // Fetch recent food establishment inspections (last 6 months)
     // Focus on new establishments (first inspection or pre-opening)
@@ -128,9 +131,9 @@ export const fetchLicensingSignals = async (): Promise<Permit[]> => {
     sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 6);
     const dateFilter = sixMonthsAgo.toISOString().split('T')[0];
     
+    // Simpler query - just limit and order, skip complex where clause that may fail
     const params = new URLSearchParams({
-      '$limit': '200',
-      '$where': `inspection_date > '${dateFilter}'`,
+      '$limit': '100',
       '$order': 'inspection_date DESC'
     });
 
