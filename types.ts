@@ -113,6 +113,34 @@ export interface CompanyProfile {
   valueProp: string;
 }
 
+export interface CallAttempt {
+  attemptNumber: number;
+  timestamp: string;
+  outcome: 'no-answer' | 'voicemail' | 'spoke-with-contact' | 'wrong-number' | 'callback-requested' | 'appointment-set';
+  notes?: string;
+  repName?: string;
+}
+
+export interface AppointmentDetails {
+  scheduledDate?: string;
+  scheduledTime?: string;
+  appointmentType?: 'phone-call' | 'in-person' | 'video-call';
+  location?: string;
+  notes?: string;
+  confirmedBy?: string;
+  reminderSent?: boolean;
+}
+
+export type AppointmentStatus = 
+  | 'not-started'           // Lead acquired, no action yet
+  | 'email-generated'       // Email template generated
+  | 'email-sent'            // Client sent initial email
+  | 'calling-in-progress'   // E BookGov rep making attempts
+  | 'appointment-set'       // Appointment successfully scheduled
+  | 'max-attempts-reached'  // 6 attempts completed, no success
+  | 'lead-unqualified'      // Lead disqualified during calls
+  | 'completed';            // Appointment occurred
+
 export interface LeadClaim {
   id: string;
   leadId: string;
@@ -123,6 +151,19 @@ export interface LeadClaim {
   paymentStatus: 'pending' | 'paid' | 'free';
   expiresAt?: string;
   notes?: string;
+  
+  // Appointment Setting Fields
+  appointmentStatus?: AppointmentStatus;
+  emailTemplate?: string;
+  emailGeneratedAt?: string;
+  emailSentAt?: string;
+  callAttempts?: CallAttempt[];
+  appointmentDetails?: AppointmentDetails;
+  assignedRepId?: string;
+  assignedRepName?: string;
+  callWindowStartDate?: string; // Start of 2-week calling window
+  callWindowEndDate?: string;   // End of 2-week calling window
+  appointmentLastUpdated?: string;
 }
 
 export interface LeadVisibility {

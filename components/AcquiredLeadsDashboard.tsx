@@ -1,5 +1,5 @@
-import React from 'react';
-import { EnrichedPermit } from '../types';
+import React, { useState } from 'react';
+import { EnrichedPermit, LeadClaim } from '../types';
 import { 
   Archive, 
   Trash2, 
@@ -10,11 +10,14 @@ import {
   Download,
   X,
   MapPin,
+  Users,
+  CheckCircle,
 } from 'lucide-react';
 import { useAcquiredLeads } from '../hooks/useAcquiredLeads';
 import { exportAcquiredLeadsCSV } from '../utils/csvExportHelpers';
 import { StatusBadge } from './badges/StatusBadge';
 import { getUrgencyColor } from '../utils/colorMappings';
+import AppointmentSettingModal from './AppointmentSettingModal';
 
 interface AcquiredLeadsDashboardProps {
   businessId: string;
@@ -42,6 +45,49 @@ export default function AcquiredLeadsDashboard({
     loadClaimedLeads,
     claimedLeads,
   } = useAcquiredLeads(businessId, permits, isOpen);
+
+  const [selectedLead, setSelectedLead] = useState<{ permit: EnrichedPermit; claim: LeadClaim } | null>(null);
+  const [appointmentModalOpen, setAppointmentModalOpen] = useState(false);
+
+  const handleOpenAppointmentModal = (lead: any) => {
+    setSelectedLead(lead);
+    setAppointmentModalOpen(true);
+  };
+
+  const handleCloseAppointmentModal = () => {
+    setAppointmentModalOpen(false);
+    setSelectedLead(null);
+  };
+
+  const handleUpdateClaim = (updatedClaim: LeadClaim) => {
+    // Refresh the leads to show updated status
+    loadClaimedLeads();
+  };
+
+  const getAppointmentStatusBadge = (claim: LeadClaim) => {
+    if (!claim.appointmentStatus || claim.appointmentStatus === 'not-started') {
+      return null;
+    }
+
+    const statusConfig = {
+      'email-generated': { text: 'Email Ready', color: 'bg-blue-500/20 text-blue-400 border-blue-500/30' },
+      'email-sent': { text: 'Email Sent', color: 'bg-purple-500/20 text-purple-400 border-purple-500/30' },
+      'calling-in-progress': { text: 'Calling', color: 'bg-amber-500/20 text-amber-400 border-amber-500/30' },
+      'appointment-set': { text: 'Appointment Set', color: 'bg-green-500/20 text-green-400 border-green-500/30' },
+      'max-attempts-reached': { text: 'Max Attempts', color: 'bg-red-500/20 text-red-400 border-red-500/30' },
+      'lead-unqualified': { text: 'Unqualified', color: 'bg-slate-500/20 text-slate-400 border-slate-500/30' },
+      'completed': { text: 'Completed', color: 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30' },
+    };
+
+    const config = statusConfig[claim.appointmentStatus as keyof typeof statusConfig];
+    if (!config) return null;
+
+    return (
+      <span className={`text-[10px] px-2 py-0.5 rounded-full border ${config.color} font-medium`}>
+        {config.text}
+      </span>
+    );
+  };
 
   const handleExportCSV = () => {
     exportAcquiredLeadsCSV(sortedLeads);
@@ -175,16 +221,23 @@ export default function AcquiredLeadsDashboard({
                 >
                   <div className="flex items-start justify-between gap-4 mb-3">
                     <div className="flex-1">
-                      <div className="flex items-center gap-2 mb-1">
+                      <div className="flex items-center gap-2 mb-1 flex-wrap">
                         <h3 className="font-bold text-white text-sm">
                           {lead.permit?.address || `Lead ${lead.leadId}`}
                         </h3>
                         <StatusBadge status={lead.status} />
+                        {getAppointmentStatusBadge(lead)}
                       </div>
                       <p className="text-xs text-slate-400 flex items-center gap-1">
                         <MapPin size={12} />
                         {lead.permit?.city}, {lead.permit?.permitType}
                       </p>
+                      {lead.assignedRepName && (
+                        <p className="text-xs text-blue-400 flex items-center gap-1 mt-1">
+                          <Users size={12} />
+                          Rep: {lead.assignedRepName}
+                        </p>
+                      )}
                     </div>
                     <div className="text-right">
                       <p className="font-bold text-white">
@@ -193,6 +246,11 @@ export default function AcquiredLeadsDashboard({
                       <p className={`text-xs font-medium ${getUrgencyColor(lead.permit?.aiAnalysis?.urgency || '')}`}>
                         {lead.permit?.aiAnalysis?.urgency || 'N/A'} Priority
                       </p>
+                      {lead.callAttempts && lead.callAttempts.length > 0 && (
+                        <p className="text-[10px] text-slate-400 mt-1">
+                          {lead.callAttempts.length} call{lead.callAttempts.length !== 1 ? 's' : ''}
+                        </p>
+                      )}
                     </div>
                   </div>
 
@@ -223,17 +281,27 @@ export default function AcquiredLeadsDashboard({
 
                   {/* Actions */}
                   <div className="flex gap-2">
-                    <button className="flex-1 px-3 py-2 bg-blue-600 hover:bg-blue-500 text-white text-xs font-medium rounded flex items-center justify-center gap-1 transition-colors">
+                    <button 
+                      onClick={() => handleOpenAppointmentModal(lead)}
+                      className="flex-1 px-3 py-2 bg-blue-600 hover:bg-blue-500 text-white text-xs font-medium rounded flex items-center justify-center gap-1 transition-colors"
+                    >
+                      {lead.appointmentStatus === 'appointment-set' || lead.appointmentStatus === 'completed' ? (
+                        <>
+                          <CheckCircle size={14} />
+                          View Appointment
+                        </>
+                      ) : (
+                        <>
+                          <Users size={14} />
+                          Set Appointment
+                        </>
+                      )}
+                    </button>
+                    <button className="px-3 py-2 bg-slate-700 hover:bg-slate-600 text-slate-200 text-xs font-medium rounded flex items-center justify-center gap-1 transition-colors">
                       <Mail size={14} />
-                      Email
                     </button>
-                    <button className="flex-1 px-3 py-2 bg-slate-700 hover:bg-slate-600 text-slate-200 text-xs font-medium rounded flex items-center justify-center gap-1 transition-colors">
+                    <button className="px-3 py-2 bg-slate-700 hover:bg-slate-600 text-slate-200 text-xs font-medium rounded flex items-center justify-center gap-1 transition-colors">
                       <Phone size={14} />
-                      Call
-                    </button>
-                    <button className="flex-1 px-3 py-2 bg-slate-700 hover:bg-slate-600 text-slate-200 text-xs font-medium rounded flex items-center justify-center gap-1 transition-colors">
-                      <Calendar size={14} />
-                      Schedule
                     </button>
                     <button className="px-3 py-2 bg-red-600/20 hover:bg-red-600/30 text-red-400 text-xs font-medium rounded border border-red-600/50 transition-colors">
                       <Trash2 size={14} />
@@ -245,6 +313,18 @@ export default function AcquiredLeadsDashboard({
           )}
         </div>
       </div>
+
+      {/* Appointment Setting Modal */}
+      {selectedLead && (
+        <AppointmentSettingModal
+          isOpen={appointmentModalOpen}
+          onClose={handleCloseAppointmentModal}
+          lead={selectedLead.permit}
+          claim={selectedLead}
+          onUpdate={handleUpdateClaim}
+          companyProfile={companyProfile}
+        />
+      )}
     </div>
   );
 }

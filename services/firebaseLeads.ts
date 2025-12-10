@@ -239,3 +239,152 @@ export async function getClaimedLeadsForBusiness(businessId: string): Promise<Le
 export function clearVisibilityCache() {
   localStorage.removeItem(LEAD_VISIBILITY_CACHE);
 }
+
+// ========================================
+// APPOINTMENT SETTING FUNCTIONS
+// ========================================
+
+/**
+ * Update appointment setting data for a claimed lead
+ */
+export async function updateAppointmentSetting(
+  claimId: string,
+  updates: Partial<LeadClaim>
+): Promise<void> {
+  try {
+    // Update Firestore
+    try {
+      const claimRef = doc(db, LEADS_COLLECTION, claimId);
+      await setDoc(claimRef, updates, { merge: true });
+      console.log(`[AppointmentSetting] Updated claim ${claimId} in Firestore`);
+    } catch (firebaseErr) {
+      console.warn('[AppointmentSetting] Could not update Firestore, updating cache only:', firebaseErr);
+    }
+
+    // Always update cache for immediate UI feedback
+    // Note: Cache structure needs to be extended to store full LeadClaim data
+    const fullClaimCache = JSON.parse(localStorage.getItem('full_claims_cache_v1') || '{}');
+    fullClaimCache[claimId] = {
+      ...fullClaimCache[claimId],
+      ...updates,
+      appointmentLastUpdated: new Date().toISOString()
+    };
+    localStorage.setItem('full_claims_cache_v1', JSON.stringify(fullClaimCache));
+
+  } catch (error) {
+    console.error('[AppointmentSetting] Error updating appointment setting:', error);
+    throw error;
+  }
+}
+
+/**
+ * Get full claim data including appointment setting info
+ */
+export async function getFullClaimData(claimId: string): Promise<LeadClaim | null> {
+  try {
+    // Try Firestore first
+    try {
+      const claimRef = doc(db, LEADS_COLLECTION, claimId);
+      const claimDoc = await getDoc(claimRef);
+      
+      if (claimDoc.exists()) {
+        return claimDoc.data() as LeadClaim;
+      }
+    } catch (firebaseErr) {
+      console.warn('[AppointmentSetting] Could not fetch from Firestore, using cache:', firebaseErr);
+    }
+
+    // Fallback to cache
+    const fullClaimCache = JSON.parse(localStorage.getItem('full_claims_cache_v1') || '{}');
+    return fullClaimCache[claimId] || null;
+
+  } catch (error) {
+    console.error('[AppointmentSetting] Error getting full claim data:', error);
+    return null;
+  }
+}
+
+/**
+ * Save email template for a claim
+ */
+export async function saveEmailTemplate(
+  claimId: string,
+  emailTemplate: string
+): Promise<void> {
+  try {
+    await updateAppointmentSetting(claimId, {
+      emailTemplate,
+      emailGeneratedAt: new Date().toISOString(),
+      appointmentStatus: 'email-generated'
+    });
+    console.log(`[AppointmentSetting] Saved email template for claim ${claimId}`);
+  } catch (error) {
+    console.error('[AppointmentSetting] Error saving email template:', error);
+    throw error;
+  }
+}
+
+/**
+ * Mark email as sent by client
+ */
+export async function markEmailAsSent(claimId: string): Promise<void> {
+  try {
+    await updateAppointmentSetting(claimId, {
+      emailSentAt: new Date().toISOString(),
+      appointmentStatus: 'email-sent'
+    });
+    console.log(`[AppointmentSetting] Marked email as sent for claim ${claimId}`);
+  } catch (error) {
+    console.error('[AppointmentSetting] Error marking email as sent:', error);
+    throw error;
+  }
+}
+
+/**
+ * Add call attempt to a claim
+ */
+export async function addCallAttemptToLead(
+  claimId: string,
+  callAttempt: import('../types').CallAttempt,
+  newStatus: import('../types').AppointmentStatus
+): Promise<void> {
+  try {
+    const claim = await getFullClaimData(claimId);
+    if (!claim) {
+      throw new Error(`Claim ${claimId} not found`);
+    }
+
+    const existingAttempts = claim.callAttempts || [];
+    
+    await updateAppointmentSetting(claimId, {
+      callAttempts: [...existingAttempts, callAttempt],
+      appointmentStatus: newStatus,
+      appointmentLastUpdated: new Date().toISOString()
+    });
+    
+    console.log(`[AppointmentSetting] Added call attempt to claim ${claimId}`);
+  } catch (error) {
+    console.error('[AppointmentSetting] Error adding call attempt:', error);
+    throw error;
+  }
+}
+
+/**
+ * Schedule appointment for a claim
+ */
+export async function scheduleAppointmentForLead(
+  claimId: string,
+  appointmentDetails: import('../types').AppointmentDetails
+): Promise<void> {
+  try {
+    await updateAppointmentSetting(claimId, {
+      appointmentDetails,
+      appointmentStatus: 'appointment-set',
+      appointmentLastUpdated: new Date().toISOString()
+    });
+    console.log(`[AppointmentSetting] Scheduled appointment for claim ${claimId}`);
+  } catch (error) {
+    console.error('[AppointmentSetting] Error scheduling appointment:', error);
+    throw error;
+  }
+}
