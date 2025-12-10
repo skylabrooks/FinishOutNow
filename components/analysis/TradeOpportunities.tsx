@@ -9,25 +9,25 @@ interface TradeOpportunitiesProps {
 export const TradeOpportunities: React.FC<TradeOpportunitiesProps> = ({ tradeOpportunities }) => {
   return (
     <div>
-      <h3 className="text-slate-400 text-xs uppercase tracking-wider font-semibold mb-3">
+      <h3 className="text-slate-400 text-[10px] uppercase tracking-wider font-semibold mb-2">
         Trade Opportunities
       </h3>
-      <div className="space-y-2">
+      <div className="space-y-1.5">
         <TradeItem
           active={tradeOpportunities.securityIntegrator}
-          icon={<Shield size={18} />}
+          icon={<Shield size={14} />}
           label="Security & Access"
           colorScheme="red"
         />
         <TradeItem
           active={tradeOpportunities.lowVoltageIT}
-          icon={<Cable size={18} />}
+          icon={<Cable size={14} />}
           label="Low Voltage / IT"
           colorScheme="cyan"
         />
         <TradeItem
           active={tradeOpportunities.signage}
-          icon={<PenTool size={16} />}
+          icon={<PenTool size={14} />}
           label="Signage & Branding"
           colorScheme="amber"
         />
@@ -62,16 +62,16 @@ const TradeItem: React.FC<TradeItemProps> = ({ active, icon, label, colorScheme 
   const theme = colors[colorScheme];
 
   return (
-    <div className={`flex items-center justify-between p-3 rounded-lg border ${theme.container}`}>
-      <div className="flex items-center gap-2">
-        <div className={`p-1.5 rounded ${theme.icon}`}>
+    <div className={`flex items-center justify-between p-2 rounded-lg border ${theme.container}`}>
+      <div className="flex items-center gap-1.5">
+        <div className={`p-1 rounded ${theme.icon}`}>
           {icon}
         </div>
-        <span className={active ? 'text-white font-medium' : 'text-slate-500'}>
+        <span className={`text-xs ${active ? 'text-white font-medium' : 'text-slate-500'}`}>
           {label}
         </span>
       </div>
-      {active && <CheckCircle size={16} className="text-emerald-400" />}
+      {active && <CheckCircle size={12} className="text-emerald-400" />}
     </div>
   );
 };
