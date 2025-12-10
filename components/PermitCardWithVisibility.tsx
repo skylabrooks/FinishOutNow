@@ -50,29 +50,29 @@ export default function PermitCardWithVisibility({
   return (
     <div
       onClick={onSelectPermit}
-      className={`group bg-slate-900 border transition-all duration-300 rounded-xl overflow-hidden relative
+      className={`group bg-gradient-to-br from-slate-900/80 to-slate-900/60 backdrop-blur-sm border transition-all duration-300 rounded-xl overflow-hidden relative hover:scale-[1.01]
         ${permit.aiAnalysis?.isCommercialTrigger
-          ? 'border-emerald-500/30 hover:border-emerald-500/60 shadow-lg shadow-emerald-900/10'
-          : 'border-slate-800 hover:border-slate-700 hover:shadow-xl'
+          ? 'border-emerald-500/30 hover:border-emerald-500/50 shadow-lg shadow-emerald-900/20 hover:shadow-emerald-900/30'
+          : 'border-slate-800/70 hover:border-slate-700 hover:shadow-xl hover:shadow-slate-900/50'
         }
         ${permit.aiAnalysis ? 'cursor-pointer' : ''}
       `}
     >
       {/* Verification Status Stripe */}
       {permit.enrichmentData?.verified && (
-        <div className="absolute top-0 right-0 left-0 h-1 bg-gradient-to-r from-emerald-500 to-emerald-700"></div>
+        <div className="absolute top-0 right-0 left-0 h-1 bg-gradient-to-r from-emerald-500 to-emerald-600"></div>
       )}
 
       {/* Lock Badge if Unclaimed */}
       {isLocked && (
-        <div className="absolute top-3 right-3 bg-amber-600 text-white px-2 py-1 rounded flex items-center gap-1 text-xs font-bold">
+        <div className="absolute top-3 right-3 bg-gradient-to-r from-amber-600 to-orange-600 text-white px-3 py-1.5 rounded-lg flex items-center gap-1.5 text-xs font-bold shadow-lg shadow-amber-900/30">
           <Lock size={12} /> LOCKED
         </div>
       )}
 
       {/* Claimed Badge if Claimed */}
       {!isLocked && (
-        <div className="absolute top-3 right-3 bg-emerald-600 text-white px-2 py-1 rounded flex items-center gap-1 text-xs font-bold">
+        <div className="absolute top-3 right-3 bg-gradient-to-r from-emerald-600 to-green-600 text-white px-3 py-1.5 rounded-lg flex items-center gap-1.5 text-xs font-bold shadow-lg shadow-emerald-900/30">
           <CheckCircle size={12} /> CLAIMED
         </div>
       )}
@@ -150,7 +150,7 @@ export default function PermitCardWithVisibility({
         </div>
 
         {/* Right: AI Intel or Action */}
-        <div className="w-full md:w-64 border-t md:border-t-0 md:border-l border-slate-800 pt-4 md:pt-0 md:pl-6 flex flex-col justify-center">
+        <div className="w-full md:w-64 border-t md:border-t-0 md:border-l border-slate-800/50 pt-4 md:pt-0 md:pl-6 flex flex-col justify-center">
           {permit.aiAnalysis ? (
             <div className="space-y-3">
               <div className="flex items-center justify-between">
@@ -196,12 +196,12 @@ export default function PermitCardWithVisibility({
                       e.stopPropagation();
                       onClaimLead();
                     }}
-                    className="w-full bg-amber-600 hover:bg-amber-700 text-white border border-amber-600 px-4 py-2 rounded-lg text-xs font-semibold transition-all flex items-center justify-center gap-2"
+                    className="w-full bg-gradient-to-r from-amber-600 to-orange-600 hover:from-amber-500 hover:to-orange-500 text-white px-4 py-2.5 rounded-lg text-xs font-bold transition-all flex items-center justify-center gap-2 shadow-lg shadow-amber-900/30"
                   >
                     🔐 Claim Lead
                   </button>
                 )}
-                <button className="w-full text-xs font-medium text-blue-400 hover:text-blue-300 flex items-center justify-center gap-1">
+                <button className="w-full text-xs font-semibold text-blue-400 hover:text-blue-300 hover:bg-blue-500/10 py-2 rounded-lg flex items-center justify-center gap-1 transition-all">
                   View Analysis <PlayCircle size={12} />
                 </button>
               </div>
@@ -214,7 +214,7 @@ export default function PermitCardWithVisibility({
                   onAnalyze();
                 }}
                 disabled={isAnalyzing}
-                className="w-full bg-slate-800 hover:bg-blue-600 hover:text-white border border-slate-700 text-slate-400 px-4 py-3 rounded-lg text-sm font-semibold transition-all flex items-center justify-center gap-2 group/btn"
+                className="w-full bg-gradient-to-r from-slate-800 to-slate-700 hover:from-blue-600 hover:to-blue-500 hover:text-white border border-slate-700/50 hover:border-blue-500/50 text-slate-300 px-4 py-3 rounded-lg text-sm font-bold transition-all flex items-center justify-center gap-2 shadow-lg disabled:opacity-50 disabled:cursor-not-allowed group/btn"
               >
                 {isAnalyzing ? (
                   <>
@@ -222,7 +222,7 @@ export default function PermitCardWithVisibility({
                   </>
                 ) : (
                   <>
-                    <Sparkles size={16} className="text-blue-500 group-hover/btn:text-white transition-colors" /> Run AI Analysis
+                    <Sparkles size={16} className="text-blue-400 group-hover/btn:text-white transition-colors" /> Run AI Analysis
                   </>
                 )}
               </button>

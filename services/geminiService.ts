@@ -5,7 +5,9 @@ import { analysisSchema, systemInstruction } from "./gemini/schema";
 import { buildPrompt } from "./gemini/promptBuilder";
 import { mapGeminiResponse } from "./gemini/responseMapper";
 
-const ai = new GoogleGenAI({ apiKey: (import.meta as any).env.VITE_GEMINI_API_KEY || process.env.VITE_GEMINI_API_KEY });
+const apiKey = (import.meta as any).env.VITE_GEMINI_API_KEY || process.env.VITE_GEMINI_API_KEY;
+// Initialize with a placeholder - will fail gracefully if API key is missing
+const ai = apiKey ? new GoogleGenAI({ apiKey }) : null;
 
 export const analyzePermit = async (
     description: string, 
@@ -14,6 +16,22 @@ export const analyzePermit = async (
     permitType: string,
     companyProfile?: CompanyProfile
 ): Promise<AIAnalysisResult> => {
+  // Check if API key is configured
+  if (!ai) {
+    console.warn('[Gemini] API key not configured. Returning default analysis.');
+    return {
+      category: LeadCategory.GENERAL,
+      confidenceScore: 0,
+      reasoning: 'AI analysis unavailable (API key not configured)',
+      estimatedRevenue: valuation * 0.05,
+      isCommercialTrigger: false,
+      priority: 0,
+      rawDescription: description,
+      permitType,
+      valuation
+    };
+  }
+
   const MAX_RETRIES = 3;
   let lastError: any;
   

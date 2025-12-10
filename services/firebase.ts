@@ -37,38 +37,43 @@ console.log('[Firebase] API Key present:', !!firebaseConfig.apiKey);
 console.log('[Firebase] Auth Domain:', firebaseConfig.authDomain);
 
 // Initialize Firebase
-let app: FirebaseApp;
-let auth: Auth;
+let app: FirebaseApp | null = null;
+let auth: Auth | null = null;
 let messaging: Messaging | null = null;
-let db: Firestore;
+let db: Firestore | null = null;
 
 try {
-  app = initializeApp(firebaseConfig);
-  auth = getAuth(app);
-  db = getFirestore(app);
-  
-  console.log('[Firebase] ✅ Firebase initialized successfully');
-  console.log('[Firebase] ✅ Firestore initialized for project:', firebaseConfig.projectId);
-  
-  // Enable persistent authentication across browser sessions
-  setPersistence(auth, browserLocalPersistence).catch(err => {
-    console.warn('Auth persistence setup failed:', err);
-  });
+  if (firebaseConfig.apiKey && firebaseConfig.projectId) {
+    app = initializeApp(firebaseConfig);
+    auth = getAuth(app);
+    db = getFirestore(app);
+    
+    console.log('[Firebase] ✅ Firebase initialized successfully');
+    console.log('[Firebase] ✅ Firestore initialized for project:', firebaseConfig.projectId);
+    
+    // Enable persistent authentication across browser sessions
+    setPersistence(auth, browserLocalPersistence).catch(err => {
+      console.warn('Auth persistence setup failed:', err);
+    });
 
-  // Initialize Cloud Messaging (may fail in non-browser context)
-  try {
-    messaging = getMessaging(app);
-    console.log('Firebase Cloud Messaging initialized');
-  } catch (err) {
-    console.warn('Cloud Messaging not available:', err);
+    // Initialize Cloud Messaging (may fail in non-browser context)
+    try {
+      messaging = getMessaging(app);
+      console.log('Firebase Cloud Messaging initialized');
+    } catch (err) {
+      console.warn('Cloud Messaging not available:', err);
+    }
+  } else {
+    console.warn('[Firebase] ⚠️ Missing configuration. Running in demo mode.');
   }
 } catch (err) {
   console.error('Firebase initialization failed:', err);
-  throw new Error('Firebase setup failed. Check your environment variables.');
+  console.warn('[Firebase] ⚠️ Continuing in demo mode without authentication.');
 }
 
 // Auth helpers
 export const registerUser = async (email: string, password: string) => {
+  if (!auth) throw new Error('Firebase Auth not initialized');
   try {
     const userCredential = await createUserWithEmailAndPassword(auth, email, password);
     return userCredential.user;
@@ -79,6 +84,7 @@ export const registerUser = async (email: string, password: string) => {
 };
 
 export const loginUser = async (email: string, password: string) => {
+  if (!auth) throw new Error('Firebase Auth not initialized');
   try {
     const userCredential = await signInWithEmailAndPassword(auth, email, password);
     return userCredential.user;
@@ -89,6 +95,7 @@ export const loginUser = async (email: string, password: string) => {
 };
 
 export const logoutUser = async () => {
+  if (!auth) throw new Error('Firebase Auth not initialized');
   try {
     await signOut(auth);
   } catch (error) {
@@ -98,10 +105,15 @@ export const logoutUser = async () => {
 };
 
 export const onAuthChange = (callback: (user: User | null) => void) => {
+  if (!auth) {
+    console.warn('Firebase Auth not initialized, calling callback with null');
+    callback(null);
+    return () => {};
+  }
   return onAuthStateChanged(auth, callback);
 };
 
-export const getCurrentUser = () => auth.currentUser;
+export const getCurrentUser = () => auth?.currentUser || null;
 
 // Cloud Messaging helpers for push notifications
 export const requestNotificationPermission = async (): Promise<string | null> => {

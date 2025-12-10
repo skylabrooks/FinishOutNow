@@ -100,9 +100,17 @@ const AppContent: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-200 font-sans selection:bg-blue-500/30">
-      {/* Navbar */}
-      <AppNavbar
+    <div className="min-h-screen bg-gradient-to-br from-slate-950 via-slate-900 to-slate-950 text-slate-200 font-sans selection:bg-blue-500/30">
+      {/* Ambient background effects */}
+      <div className="fixed inset-0 overflow-hidden pointer-events-none">
+        <div className="absolute top-0 left-1/4 w-96 h-96 bg-blue-500/5 rounded-full blur-3xl"></div>
+        <div className="absolute bottom-0 right-1/4 w-96 h-96 bg-purple-500/5 rounded-full blur-3xl"></div>
+      </div>
+      
+      {/* Content */}
+      <div className="relative z-10">
+        {/* Navbar */}
+        <AppNavbar
         companyProfile={companyProfile}
         isBatchScanning={isBatchScanning}
         onSettingsClick={openSettings}
@@ -110,12 +118,12 @@ const AppContent: React.FC = () => {
         canViewAcquiredLeads={planAllowsFeature('claim')}
       />
 
-      <div className="max-w-7xl mx-auto px-4 py-8">
-        {/* Dashboard Stats */}
-        <Dashboard stats={stats} />
+        <div className="max-w-7xl mx-auto px-4 py-8">
+          {/* Dashboard Stats */}
+          <Dashboard stats={stats} />
 
-        {/* Toolbar */}
-        <PermitToolbar
+          {/* Toolbar */}
+          <PermitToolbar
           filterCity={filterCity}
           setFilterCity={setFilterCity}
           onRefresh={refreshLeads}
@@ -127,10 +135,10 @@ const AppContent: React.FC = () => {
           canExport={planAllowsFeature('csv')}
         />
 
-        {/* Main Content Area */}
-        <div className="grid grid-cols-1 lg:grid-cols-4 gap-8 items-start">
-          {/* Sidebar Navigation */}
-          <NavigationSidebar
+          {/* Main Content Area */}
+          <div className="grid grid-cols-1 lg:grid-cols-4 gap-8 items-start">
+            {/* Sidebar Navigation */}
+            <NavigationSidebar
             viewMode={viewMode}
             setViewMode={setViewMode}
             sortKey={sortKey}
@@ -140,9 +148,9 @@ const AppContent: React.FC = () => {
             canAnalytics={canAnalytics}
           />
 
-          {/* List / Map / Analytics View */}
-          <div className="lg:col-span-3 relative z-0">
-            <ViewRenderer
+            {/* List / Map / Analytics View */}
+            <div className="lg:col-span-3 relative z-0">
+              <ViewRenderer
               viewMode={effectiveView}
               permits={filteredPermits}
               loadingIds={loadingIds}
@@ -150,6 +158,7 @@ const AppContent: React.FC = () => {
               onAnalyze={handleAnalyze}
               onClaimLead={handleClaimLead}
             />
+            </div>
           </div>
         </div>
       </div>
