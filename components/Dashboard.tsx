@@ -23,44 +23,44 @@ const COLORS = ['#F87171', '#FBBF24', '#22D3EE', '#94A3B8'];
 
 const Dashboard: React.FC<DashboardProps> = ({ stats }) => {
   return (
-    <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
+    <div className="grid grid-cols-1 md:grid-cols-4 gap-3 mb-4">
       {/* Stat Cards */}
-      <div className="bg-slate-800 border border-slate-700 p-4 rounded-xl shadow-sm">
-        <div className="flex items-center justify-between mb-2">
-          <h3 className="text-slate-400 text-xs font-semibold uppercase">Pipeline Value</h3>
-          <DollarSign className="text-emerald-400" size={18} />
+      <div className="bg-slate-800 border border-slate-700 p-3 rounded-lg shadow-sm">
+        <div className="flex items-center justify-between mb-1">
+          <h3 className="text-slate-400 text-[10px] font-semibold uppercase">Pipeline Value</h3>
+          <DollarSign className="text-emerald-400" size={14} />
         </div>
-        <p className="text-2xl font-bold text-white">${stats.totalValue.toLocaleString()}</p>
-        <p className="text-emerald-400 text-xs mt-1 flex items-center gap-1">
+        <p className="text-xl font-bold text-white">${stats.totalValue.toLocaleString()}</p>
+        <p className="text-emerald-400 text-[10px] mt-0.5 flex items-center gap-1">
           <span className="bg-emerald-400/10 px-1 rounded">+12%</span> vs last week
         </p>
       </div>
 
-      <div className="bg-slate-800 border border-slate-700 p-4 rounded-xl shadow-sm">
-        <div className="flex items-center justify-between mb-2">
-          <h3 className="text-slate-400 text-xs font-semibold uppercase">Active Leads</h3>
-          <Users className="text-blue-400" size={18} />
+      <div className="bg-slate-800 border border-slate-700 p-3 rounded-lg shadow-sm">
+        <div className="flex items-center justify-between mb-1">
+          <h3 className="text-slate-400 text-[10px] font-semibold uppercase">Active Leads</h3>
+          <Users className="text-blue-400" size={14} />
         </div>
-        <p className="text-2xl font-bold text-white">{stats.activeLeads}</p>
-        <p className="text-blue-400 text-xs mt-1">
+        <p className="text-xl font-bold text-white">{stats.activeLeads}</p>
+        <p className="text-blue-400 text-[10px] mt-0.5">
           {stats.highPriority} High Urgency
         </p>
       </div>
 
-       <div className="bg-slate-800 border border-slate-700 p-4 rounded-xl shadow-sm">
-        <div className="flex items-center justify-between mb-2">
-          <h3 className="text-slate-400 text-xs font-semibold uppercase">AI Confidence</h3>
-          <Activity className="text-purple-400" size={18} />
+       <div className="bg-slate-800 border border-slate-700 p-3 rounded-lg shadow-sm">
+        <div className="flex items-center justify-between mb-1">
+          <h3 className="text-slate-400 text-[10px] font-semibold uppercase">AI Confidence</h3>
+          <Activity className="text-purple-400" size={14} />
         </div>
-        <p className="text-2xl font-bold text-white">{stats.avgConfidence}%</p>
-        <p className="text-slate-500 text-xs mt-1">
+        <p className="text-xl font-bold text-white">{stats.avgConfidence}%</p>
+        <p className="text-slate-500 text-[10px] mt-0.5">
           Across {stats.activeLeads} processed permits
         </p>
       </div>
 
-      <div className="bg-slate-800 border border-slate-700 p-4 rounded-xl shadow-sm md:col-span-1 flex flex-col h-[220px]">
-        <div className="flex-1 w-full" style={{ minWidth: 0, minHeight: 160, maxHeight: 160, display: 'flex' }}>
-            <ResponsiveContainer width="100%" height={160} debounce={0}>
+      <div className="bg-slate-800 border border-slate-700 p-3 rounded-lg shadow-sm md:col-span-1 flex flex-col h-[140px]">
+        <div className="flex-1 w-full" style={{ minWidth: 0, minHeight: 100, maxHeight: 100, display: 'flex' }}>
+            <ResponsiveContainer width="100%" height={100} debounce={0}>
             <BarChart data={data} margin={{ top: 5, right: 5, bottom: 5, left: 5 }}>
                 <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#334155" />
                 <XAxis dataKey="name" hide />
@@ -77,7 +77,7 @@ const Dashboard: React.FC<DashboardProps> = ({ stats }) => {
             </BarChart>
             </ResponsiveContainer>
         </div>
-        <div className="flex justify-between text-xs text-slate-400 mt-2 px-1">
+        <div className="flex justify-between text-[10px] text-slate-400 mt-1 px-1">
             <span>Sec</span>
             <span>Sign</span>
             <span>IT</span>

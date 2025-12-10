@@ -42,55 +42,55 @@ const AnalysisModal: React.FC<AnalysisModalProps> = ({ permit, onClose, companyP
       onClick={onClose}
     >
       <div 
-        className="bg-slate-900 border border-slate-700 rounded-xl w-full max-w-3xl shadow-2xl relative overflow-hidden my-8 animate-in zoom-in-95 duration-200"
+        className="bg-slate-900 border border-slate-700 rounded-lg w-full max-w-3xl shadow-2xl relative overflow-hidden my-8 animate-in zoom-in-95 duration-200"
         onClick={(e) => e.stopPropagation()}
       >
         
         {/* Header */}
-        <div className="p-6 border-b border-slate-800 flex justify-between items-start bg-slate-900 sticky top-0 z-10">
+        <div className="p-4 border-b border-slate-800 flex justify-between items-start bg-slate-900 sticky top-0 z-10">
           <div>
-            <div className="flex flex-wrap items-center gap-2 mb-2">
+            <div className="flex flex-wrap items-center gap-1.5 mb-1.5">
               {aiAnalysis.isCommercialTrigger && (
-                <span className="px-2 py-0.5 rounded text-xs font-bold bg-emerald-500/20 text-emerald-400 border border-emerald-500/50 flex items-center gap-1">
-                   <Zap size={10} /> Commercial Trigger
+                <span className="px-1.5 py-0.5 rounded text-[10px] font-bold bg-emerald-500/20 text-emerald-400 border border-emerald-500/50 flex items-center gap-0.5">
+                   <Zap size={9} /> Commercial Trigger
                 </span>
               )}
               <CategoryBadge category={aiAnalysis.category} />
-              <span className="flex items-center gap-1 px-2 py-0.5 rounded text-xs font-mono bg-slate-800 text-slate-400 border border-slate-700">
-                  {permit.permitType === 'Certificate of Occupancy' ? <FileCheck size={10} /> : <Hammer size={10} />}
+              <span className="flex items-center gap-1 px-1.5 py-0.5 rounded text-[10px] font-mono bg-slate-800 text-slate-400 border border-slate-700">
+                  {permit.permitType === 'Certificate of Occupancy' ? <FileCheck size={9} /> : <Hammer size={9} />}
                   {permit.permitType}
               </span>
             </div>
-            <h2 className="text-xl font-bold text-white leading-tight">
+            <h2 className="text-lg font-bold text-white leading-tight">
                {aiAnalysis.extractedEntities.tenantName ? (
                    <span className="text-white">{aiAnalysis.extractedEntities.tenantName} <span className="text-slate-500 font-normal">via {permit.applicant}</span></span>
                ) : (
                    permit.applicant
                )}
             </h2>
-            <p className="text-slate-400 text-sm mt-1">{permit.address}, {permit.city}</p>
+            <p className="text-slate-400 text-xs mt-0.5">{permit.address}, {permit.city}</p>
           </div>
           <button 
             onClick={onClose} 
-            className="text-slate-400 hover:text-white hover:bg-red-500/20 hover:border-red-500/50 transition-all bg-slate-800 border border-slate-700 p-2 rounded-lg group"
+            className="text-slate-400 hover:text-white hover:bg-red-500/20 hover:border-red-500/50 transition-all bg-slate-800 border border-slate-700 p-1.5 rounded-lg group"
             title="Close (ESC)"
           >
-            <X size={20} className="group-hover:scale-110 transition-transform" />
+            <X size={18} className="group-hover:scale-110 transition-transform" />
           </button>
         </div>
 
         {/* Body */}
-        <div className="p-6 grid grid-cols-1 md:grid-cols-2 gap-8">
+        <div className="p-4 grid grid-cols-1 md:grid-cols-2 gap-4">
           
           {/* Left Column: Deep Analysis */}
-          <div className="space-y-6">
+          <div className="space-y-3">
             
             {/* Reasoning Box */}
-            <div className="bg-slate-800/40 p-4 rounded-lg border border-slate-700">
-                <h3 className="text-slate-400 text-xs uppercase tracking-wider font-semibold mb-2 flex items-center gap-2">
-                    <Info size={14} /> AI Analysis
+            <div className="bg-slate-800/40 p-3 rounded-lg border border-slate-700">
+                <h3 className="text-slate-400 text-[10px] uppercase tracking-wider font-semibold mb-1.5 flex items-center gap-1.5">
+                    <Info size={12} /> AI Analysis
                 </h3>
-                <p className="text-slate-200 text-sm leading-relaxed">
+                <p className="text-slate-200 text-xs leading-relaxed">
                     {aiAnalysis.reasoning}
                 </p>
             </div>
