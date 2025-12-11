@@ -20,7 +20,7 @@ import PermitToolbar from './components/PermitToolbar';
 import { exportPermitsToCSV } from './utils/csvExport';
 
 function AppContent() {
-  const { user, loading } = useAuth();
+  const { user, loading, login } = useAuth();
   const [activeView, setActiveView] = useState('dashboard');
   const [selectedPermit, setSelectedPermit] = useState<EnrichedPermit | null>(null);
   const [isAnalysisModalOpen, setIsAnalysisModalOpen] = useState(false);
@@ -114,7 +114,11 @@ function AppContent() {
           <h1 className="text-3xl font-bold text-white mb-2">FinishOutNow</h1>
           <p className="text-slate-400 mb-8">Sign in to access the intelligence platform</p>
           <button 
-            onClick={() => { /* Trigger login logic here if needed, or rely on AuthContext */ }}
+            onClick={() => {
+              // Demo login with test credentials
+              login('test@example.com', 'password123')
+                .catch(err => console.error('Login failed:', err));
+            }}
             className="w-full bg-indigo-600 hover:bg-indigo-500 text-white font-medium py-3 px-4 rounded-lg transition-all"
           >
             Sign In

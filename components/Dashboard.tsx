@@ -39,8 +39,8 @@ const Dashboard: React.FC<DashboardProps> = ({ stats }) => {
         <p className="text-slate-500 text-xs mt-1">Total estimated project value</p>
         
         {/* Mini Chart */}
-        <div className="h-10 mt-4 -mx-2">
-          <ResponsiveContainer width="100%" height="100%">
+        <div className="mt-4 -mx-2" style={{ width: '100%', height: '40px', minHeight: '40px' }}>
+          <ResponsiveContainer width="100%" height={40}>
             <AreaChart data={data}>
               <defs>
                 <linearGradient id="colorValue" x1="0" y1="0" x2="0" y2="1">

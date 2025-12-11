@@ -73,11 +73,21 @@ export const fetchTABCLicenses = async (): Promise<Permit[]> => {
 
     console.log(`[TABC] Fetching licenses with query: ${params.toString()}`);
 
+    // Check if we have API token, if not, use mock data in dev mode
+    const hasApiToken = import.meta.env.VITE_TEXAS_APP_TOKEN && 
+                        import.meta.env.VITE_TEXAS_APP_TOKEN !== 'your_texas_app_token_here';
+    const isDevMode = import.meta.env.VITE_DEV_MODE === 'true';
+    
+    if (!hasApiToken && isDevMode) {
+      console.warn('[TABC] No API token configured, using mock data in development mode');
+      return generateMockTABCLicenses();
+    }
+
     const response = await fetch(`${TABC_ENDPOINT}?${params.toString()}`, {
       headers: {
         'Accept': 'application/json',
         // Add App Token if available (optional but recommended for higher rate limits)
-        ...(import.meta.env.VITE_TEXAS_APP_TOKEN && {
+        ...(hasApiToken && {
           'X-App-Token': import.meta.env.VITE_TEXAS_APP_TOKEN
         })
       }
@@ -205,3 +215,36 @@ export const detectGhostLeads = async (existingPermits: Permit[]): Promise<Permi
     leadScore: 85, // High score - these are often exclusive finds
   }));
 };
+
+/**
+ * Generate mock TABC license data for development when API tokens are not available
+ */
+function generateMockTABCLicenses(): Permit[] {
+  const mockLicenses: Permit[] = [
+    {
+      id: 'tabc-mock-1',
+      address: '1234 Main St, Dallas, TX 75201',
+      city: 'Dallas',
+      date: '2025-01-01',
+      description: 'New Restaurant & Bar - Mixed Beverage License',
+      permitType: 'TABC License',
+      source: 'TABC (Mock)',
+      valuation: 0,
+      coordinates: { lat: 32.7767, lng: -96.7970 }
+    },
+    {
+      id: 'tabc-mock-2',
+      address: '5678 Commerce St, Fort Worth, TX 76102',
+      city: 'Fort Worth',
+      date: '2025-01-05',
+      description: 'Craft Brewery - Beer & Wine License',
+      permitType: 'TABC License',
+      source: 'TABC (Mock)',
+      valuation: 0,
+      coordinates: { lat: 32.7555, lng: -97.3308 }
+    }
+  ];
+
+  console.log(`[TABC] Generated ${mockLicenses.length} mock licenses for development`);
+  return mockLicenses;
+}

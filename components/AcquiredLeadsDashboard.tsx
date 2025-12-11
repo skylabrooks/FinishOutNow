@@ -49,8 +49,12 @@ export default function AcquiredLeadsDashboard({
   const [selectedLead, setSelectedLead] = useState<{ permit: EnrichedPermit; claim: LeadClaim } | null>(null);
   const [appointmentModalOpen, setAppointmentModalOpen] = useState(false);
 
-  const handleOpenAppointmentModal = (lead: any) => {
-    setSelectedLead(lead);
+  const handleOpenAppointmentModal = (claimedLead: any) => {
+    // claimedLead is a ClaimedLeadWithPermit, structure it for the modal
+    setSelectedLead({
+      permit: claimedLead.permit,
+      claim: claimedLead as LeadClaim
+    });
     setAppointmentModalOpen(true);
   };
 

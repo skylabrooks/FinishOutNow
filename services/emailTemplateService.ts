@@ -1,7 +1,15 @@
 import { GoogleGenAI } from "@google/genai";
 import { EnrichedPermit, CompanyProfile, LeadCategory } from "../types";
 
-const ai = new GoogleGenAI({ apiKey: (import.meta as any).env.VITE_GEMINI_API_KEY || process.env.VITE_GEMINI_API_KEY });
+let ai: GoogleGenAI | null = null;
+
+function getAiClient(): GoogleGenAI {
+  if (!ai) {
+    const apiKey = (import.meta as any).env.VITE_GEMINI_API_KEY || process.env.VITE_GEMINI_API_KEY;
+    ai = new GoogleGenAI({ apiKey });
+  }
+  return ai;
+}
 
 /**
  * Email Template Generation Service
@@ -84,6 +92,7 @@ export async function generateFirstContactEmail(
       .replace('{{CITY}}', city)
       .replace('{{TENANT_NAME}}', tenantName);
 
+    const ai = getAiClient();
     const response = await ai.models.generateContent({
       model: "gemini-2.0-flash",
       contents: prompt,
