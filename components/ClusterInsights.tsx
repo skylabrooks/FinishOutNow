@@ -6,6 +6,7 @@
 import React from 'react';
 import { LeadCluster, Hotspot } from '../types';
 import { HotspotSummary } from '../services/geospatial/heatmapService';
+import { Target, Flame, BarChart3, Star, MapPin, DollarSign, Activity } from 'lucide-react';
 
 interface ClusterInsightsProps {
   clusters: LeadCluster[];
@@ -21,37 +22,31 @@ export const ClusterInsights: React.FC<ClusterInsightsProps> = ({
   const topClusters = clusters.slice(0, 5);
 
   return (
-    <div style={{ 
-      padding: '20px', 
-      backgroundColor: '#ffffff', 
-      borderRadius: '8px',
-      boxShadow: '0 2px 4px rgba(0,0,0,0.1)'
-    }}>
-      <h2 style={{ margin: '0 0 20px 0', fontSize: '20px', fontWeight: 600 }}>
+    <div className="bg-slate-900 border border-slate-800 rounded-xl p-6 shadow-lg">
+      <h2 className="text-xl font-bold text-white mb-6 flex items-center gap-2">
+        <Activity className="text-indigo-400" size={24} />
         Cluster Insights
       </h2>
 
       {/* Summary Stats */}
-      <div style={{ 
-        display: 'grid', 
-        gridTemplateColumns: 'repeat(auto-fit, minmax(150px, 1fr))', 
-        gap: '16px',
-        marginBottom: '24px'
-      }}>
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
         <StatCard
           label="Total Clusters"
           value={clusters.length}
-          icon="🎯"
+          icon={<Target size={24} className="text-blue-400" />}
+          color="blue"
         />
         <StatCard
           label="Total Hotspots"
           value={hotspotSummary?.totalHotspots ?? hotspots?.length ?? 0}
-          icon="🔥"
+          icon={<Flame size={24} className="text-orange-400" />}
+          color="orange"
         />
         <StatCard
           label="Total Leads"
           value={clusters.reduce((sum, c) => sum + c.leads.length, 0)}
-          icon="📊"
+          icon={<BarChart3 size={24} className="text-purple-400" />}
+          color="purple"
         />
         <StatCard
           label="Avg Score"
@@ -60,64 +55,56 @@ export const ClusterInsights: React.FC<ClusterInsightsProps> = ({
               ? (clusters.reduce((sum, c) => sum + c.averageScore, 0) / clusters.length).toFixed(1)
               : '0'
           }
-          icon="⭐"
+          icon={<Star size={24} className="text-yellow-400" />}
+          color="yellow"
         />
       </div>
 
       {/* Top Clusters Table */}
-      <div>
-        <h3 style={{ margin: '0 0 12px 0', fontSize: '16px', fontWeight: 600 }}>
-          Top Performing Clusters
+      <div className="mb-8">
+        <h3 className="text-sm font-bold text-slate-500 uppercase tracking-wider mb-4 flex items-center gap-2">
+            <Target size={16} /> Top Performing Clusters
         </h3>
-        <div style={{ overflowX: 'auto' }}>
-          <table style={{ 
-            width: '100%', 
-            borderCollapse: 'collapse',
-            fontSize: '14px'
-          }}>
-            <thead>
-              <tr style={{ 
-                backgroundColor: '#f8f9fa', 
-                borderBottom: '2px solid #dee2e6' 
-              }}>
-                <th style={headerStyle}>Rank</th>
-                <th style={headerStyle}>Leads</th>
-                <th style={headerStyle}>Avg Score</th>
-                <th style={headerStyle}>Valuation</th>
-                <th style={headerStyle}>Radius (mi)</th>
-                <th style={headerStyle}>Density</th>
-                <th style={headerStyle}>Top Category</th>
+        <div className="overflow-x-auto rounded-xl border border-slate-800">
+          <table className="w-full text-sm text-left">
+            <thead className="bg-slate-950 text-slate-400 uppercase text-xs font-bold">
+              <tr>
+                <th className="px-4 py-3">Rank</th>
+                <th className="px-4 py-3">Leads</th>
+                <th className="px-4 py-3">Avg Score</th>
+                <th className="px-4 py-3">Valuation</th>
+                <th className="px-4 py-3">Radius (mi)</th>
+                <th className="px-4 py-3">Density</th>
+                <th className="px-4 py-3">Top Category</th>
               </tr>
             </thead>
-            <tbody>
+            <tbody className="divide-y divide-slate-800 bg-slate-900">
               {topClusters.map((cluster, index) => (
-                <tr 
-                  key={cluster.id}
-                  style={{ borderBottom: '1px solid #dee2e6' }}
-                >
-                  <td style={cellStyle}>#{index + 1}</td>
-                  <td style={cellStyle}>{cluster.leads.length}</td>
-                  <td style={cellStyle}>
-                    <span style={{
-                      padding: '2px 8px',
-                      borderRadius: '4px',
-                      backgroundColor: getScoreColor(cluster.averageScore),
-                      color: '#fff',
-                      fontWeight: 600
-                    }}>
+                <tr key={cluster.id} className="hover:bg-slate-800/50 transition-colors">
+                  <td className="px-4 py-3 font-medium text-slate-300">#{index + 1}</td>
+                  <td className="px-4 py-3 text-white font-bold">{cluster.leads.length}</td>
+                  <td className="px-4 py-3">
+                    <span className={`px-2 py-1 rounded text-xs font-bold ${getScoreColorClass(cluster.averageScore)}`}>
                       {cluster.averageScore.toFixed(1)}
                     </span>
                   </td>
-                  <td style={cellStyle}>
+                  <td className="px-4 py-3 text-emerald-400 font-medium">
                     ${(cluster.totalValuation / 1000).toFixed(0)}k
                   </td>
-                  <td style={cellStyle}>{cluster.radiusMiles.toFixed(2)}</td>
-                  <td style={cellStyle}>{cluster.density.toFixed(1)}</td>
-                  <td style={cellStyle}>
+                  <td className="px-4 py-3 text-slate-400">{cluster.radiusMiles.toFixed(2)}</td>
+                  <td className="px-4 py-3 text-slate-400">{cluster.density.toFixed(1)}</td>
+                  <td className="px-4 py-3 text-slate-300">
                     {cluster.topCategories[0] ?? 'N/A'}
                   </td>
                 </tr>
               ))}
+              {topClusters.length === 0 && (
+                <tr>
+                    <td colSpan={7} className="px-4 py-8 text-center text-slate-500">
+                        No clusters identified yet. Run analysis to generate insights.
+                    </td>
+                </tr>
+              )}
             </tbody>
           </table>
         </div>
@@ -125,26 +112,25 @@ export const ClusterInsights: React.FC<ClusterInsightsProps> = ({
 
       {/* Hotspot Summary if available */}
       {hotspotSummary && hotspotSummary.totalHotspots > 0 && (
-        <div style={{ marginTop: '24px' }}>
-          <h3 style={{ margin: '0 0 12px 0', fontSize: '16px', fontWeight: 600 }}>
-            Hotspot Summary
+        <div>
+          <h3 className="text-sm font-bold text-slate-500 uppercase tracking-wider mb-4 flex items-center gap-2">
+            <Flame size={16} /> Hotspot Summary
           </h3>
-          <div style={{ 
-            display: 'grid', 
-            gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', 
-            gap: '12px'
-          }}>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             <InfoCard
               label="Avg Intensity"
               value={hotspotSummary.avgIntensity.toFixed(1)}
+              icon={<Activity size={18} className="text-indigo-400" />}
             />
             <InfoCard
               label="Total Leads in Hotspots"
               value={hotspotSummary.totalLeads.toString()}
+              icon={<MapPin size={18} className="text-indigo-400" />}
             />
             <InfoCard
               label="Total Hotspot Valuation"
               value={`$${(hotspotSummary.totalValuation / 1000000).toFixed(1)}M`}
+              icon={<DollarSign size={18} className="text-indigo-400" />}
             />
           </div>
         </div>
@@ -154,58 +140,44 @@ export const ClusterInsights: React.FC<ClusterInsightsProps> = ({
 };
 
 // Helper Components
-const StatCard: React.FC<{ label: string; value: string | number; icon: string }> = ({
+const StatCard: React.FC<{ label: string; value: string | number; icon: React.ReactNode; color: string }> = ({
   label,
   value,
-  icon
-}) => (
-  <div style={{ 
-    padding: '16px', 
-    backgroundColor: '#f8f9fa', 
-    borderRadius: '6px',
-    textAlign: 'center'
-  }}>
-    <div style={{ fontSize: '24px', marginBottom: '8px' }}>{icon}</div>
-    <div style={{ fontSize: '24px', fontWeight: 700, marginBottom: '4px' }}>
-      {value}
-    </div>
-    <div style={{ fontSize: '12px', color: '#6c757d', textTransform: 'uppercase' }}>
-      {label}
-    </div>
-  </div>
-);
+  icon,
+  color
+}) => {
+    const colorClasses = {
+        blue: 'bg-blue-500/10 border-blue-500/20',
+        orange: 'bg-orange-500/10 border-orange-500/20',
+        purple: 'bg-purple-500/10 border-purple-500/20',
+        yellow: 'bg-yellow-500/10 border-yellow-500/20',
+    }[color] || 'bg-slate-800 border-slate-700';
 
-const InfoCard: React.FC<{ label: string; value: string }> = ({ label, value }) => (
-  <div style={{ 
-    padding: '12px', 
-    backgroundColor: '#e9ecef', 
-    borderRadius: '4px' 
-  }}>
-    <div style={{ fontSize: '14px', color: '#6c757d', marginBottom: '4px' }}>
-      {label}
+    return (
+        <div className={`p-4 rounded-xl border ${colorClasses} flex flex-col items-center justify-center text-center`}>
+            <div className="mb-2 p-2 bg-slate-950/50 rounded-full">{icon}</div>
+            <div className="text-2xl font-bold text-white mb-1">{value}</div>
+            <div className="text-xs font-bold text-slate-500 uppercase tracking-wider">{label}</div>
+        </div>
+    );
+};
+
+const InfoCard: React.FC<{ label: string; value: string; icon: React.ReactNode }> = ({ label, value, icon }) => (
+  <div className="p-4 bg-slate-950 border border-slate-800 rounded-xl flex items-center justify-between">
+    <div>
+        <div className="text-xs text-slate-500 uppercase font-bold mb-1">{label}</div>
+        <div className="text-lg font-bold text-white">{value}</div>
     </div>
-    <div style={{ fontSize: '18px', fontWeight: 600 }}>
-      {value}
+    <div className="p-2 bg-slate-900 rounded-lg border border-slate-800">
+        {icon}
     </div>
   </div>
 );
 
 // Helper functions
-function getScoreColor(score: number): string {
-  if (score >= 80) return '#28a745'; // Green
-  if (score >= 60) return '#ffc107'; // Yellow
-  if (score >= 40) return '#fd7e14'; // Orange
-  return '#dc3545'; // Red
+function getScoreColorClass(score: number): string {
+  if (score >= 80) return 'bg-emerald-500/20 text-emerald-400 border border-emerald-500/30';
+  if (score >= 60) return 'bg-yellow-500/20 text-yellow-400 border border-yellow-500/30';
+  if (score >= 40) return 'bg-orange-500/20 text-orange-400 border border-orange-500/30';
+  return 'bg-red-500/20 text-red-400 border border-red-500/30';
 }
-
-const headerStyle: React.CSSProperties = {
-  padding: '12px 8px',
-  textAlign: 'left',
-  fontWeight: 600,
-  color: '#495057'
-};
-
-const cellStyle: React.CSSProperties = {
-  padding: '12px 8px',
-  textAlign: 'left'
-};

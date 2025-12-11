@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Lock, Eye, Zap } from 'lucide-react';
+import { Lock, Eye, Zap, MapPin, DollarSign, Calendar } from 'lucide-react';
 import { EnrichedPermit, LeadVisibility } from '../types';
 import { getLeadVisibility } from '../services/firebaseLeads';
 
@@ -27,9 +27,9 @@ export default function LeadCard({ permit, onViewDetails, onClaim }: LeadCardPro
 
   if (loading || !visibility) {
     return (
-      <div className="bg-white rounded-lg shadow-md p-4 border border-gray-200 animate-pulse">
-        <div className="h-4 bg-gray-300 rounded w-3/4 mb-3"></div>
-        <div className="h-3 bg-gray-200 rounded w-1/2"></div>
+      <div className="bg-slate-900 rounded-xl shadow-lg p-5 border border-slate-800 animate-pulse">
+        <div className="h-4 bg-slate-800 rounded w-3/4 mb-3"></div>
+        <div className="h-3 bg-slate-800 rounded w-1/2"></div>
       </div>
     );
   }
@@ -37,70 +37,65 @@ export default function LeadCard({ permit, onViewDetails, onClaim }: LeadCardPro
   const isLocked = !visibility.isClaimed;
 
   return (
-    <div className="bg-white rounded-lg shadow-md p-4 border border-gray-200 hover:shadow-lg transition">
-      <div className="flex items-start justify-between mb-3">
-        <div className="flex-1">
-          <p className="text-xs font-semibold text-gray-600 uppercase">{permit.permitType}</p>
-          <p className="text-sm font-semibold text-gray-900 mt-1 flex items-center gap-2">
-            {permit.city}
-            {isLocked && <Lock className="w-4 h-4 text-amber-600" />}
-          </p>
-        </div>
-        <span
-          className={`px-2 py-1 text-xs font-semibold rounded ${
-            permit.status === 'Issued' ? 'bg-green-100 text-green-800' : 'bg-yellow-100 text-yellow-800'
-          }`}
-        >
-          {permit.status}
+    <div className="bg-slate-900 rounded-xl shadow-lg p-5 border border-slate-800 hover:border-indigo-500/50 hover:shadow-indigo-900/20 transition-all group relative overflow-hidden">
+      {/* Status Badge */}
+      <div className="absolute top-0 right-0 p-3">
+        <span className={`px-2 py-1 text-[10px] font-bold uppercase tracking-wider rounded-lg border ${
+            permit.permitType === 'Commercial' 
+            ? 'bg-indigo-500/10 text-indigo-400 border-indigo-500/20' 
+            : 'bg-slate-800 text-slate-400 border-slate-700'
+        }`}>
+            {permit.permitType}
         </span>
       </div>
 
-      <div className="space-y-2 mb-4 text-sm">
-        {visibility.visibleFields.includes('applicant') && permit.applicant ? (
-          <p className="text-gray-700">
-            <span className="font-medium">Applicant:</span> {permit.applicant}
-          </p>
-        ) : isLocked ? (
-          <p className="text-gray-500 italic flex items-center gap-1">
-            <Lock className="w-3 h-3" /> Applicant hidden until claimed
-          </p>
-        ) : null}
-
-        <p className="text-lg font-semibold text-green-700">${permit.valuation.toLocaleString()}</p>
-
-        {permit.aiAnalysis && (
-          <div className="flex items-center gap-1 pt-2">
-            <Zap className="w-4 h-4 text-blue-600" />
-            <p className="text-xs text-blue-600 font-medium">
-              {permit.aiAnalysis.confidenceScore}% commercial match
-            </p>
-          </div>
-        )}
-
-        {visibility.claimedBy && (
-          <p className="text-xs text-gray-500 border-t pt-2 mt-2">Claimed by {visibility.claimedBy}</p>
-        )}
+      <div className="mb-4 pr-16">
+        <div className="flex items-center gap-2 mb-1">
+            <MapPin size={14} className="text-slate-500" />
+            <span className="text-sm font-bold text-white">{permit.city}</span>
+            {isLocked && <Lock size={14} className="text-amber-500" />}
+        </div>
+        <div className="text-xs text-slate-400 line-clamp-2 h-8">
+            {permit.projectDescription}
+        </div>
       </div>
 
-      <div className="flex gap-2">
-        {isLocked ? (
-          <button
-            onClick={onClaim}
-            className="flex-1 flex items-center justify-center gap-2 px-3 py-2 bg-amber-600 hover:bg-amber-700 text-white rounded text-sm font-medium transition"
-          >
-            <Lock className="w-4 h-4" />
-            Claim Lead
-          </button>
-        ) : (
-          <button
-            onClick={onViewDetails}
-            className="flex-1 flex items-center justify-center gap-2 px-3 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded text-sm font-medium transition"
-          >
-            <Eye className="w-4 h-4" />
-            View Details
-          </button>
-        )}
+      <div className="grid grid-cols-2 gap-3 mb-4">
+        <div className="bg-slate-950/50 p-2 rounded-lg border border-slate-800">
+            <div className="text-[10px] text-slate-500 uppercase font-bold mb-0.5 flex items-center gap-1">
+                <DollarSign size={10} /> Value
+            </div>
+            <div className="text-sm font-bold text-emerald-400">
+                ${(permit.valuation || 0).toLocaleString()}
+            </div>
+        </div>
+        <div className="bg-slate-950/50 p-2 rounded-lg border border-slate-800">
+            <div className="text-[10px] text-slate-500 uppercase font-bold mb-0.5 flex items-center gap-1">
+                <Calendar size={10} /> Date
+            </div>
+            <div className="text-sm font-bold text-slate-300">
+                {new Date(permit.appliedDate).toLocaleDateString()}
+            </div>
+        </div>
       </div>
+
+      {isLocked ? (
+        <button
+          onClick={onClaim}
+          className="w-full py-2.5 bg-amber-600 hover:bg-amber-500 text-white rounded-lg font-bold text-sm flex items-center justify-center gap-2 transition-all shadow-lg shadow-amber-900/20 border border-amber-500/50"
+        >
+          <Lock size={16} />
+          Unlock Lead
+        </button>
+      ) : (
+        <button
+          onClick={onViewDetails}
+          className="w-full py-2.5 bg-indigo-600 hover:bg-indigo-500 text-white rounded-lg font-bold text-sm flex items-center justify-center gap-2 transition-all shadow-lg shadow-indigo-900/20 border border-indigo-500/50"
+        >
+          <Eye size={16} />
+          View Details
+        </button>
+      )}
     </div>
   );
 }

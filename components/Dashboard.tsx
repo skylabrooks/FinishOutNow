@@ -1,7 +1,6 @@
 import React from 'react';
-import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell } from 'recharts';
-import { Users, HardHat, DollarSign, Activity } from 'lucide-react';
-import { LeadCategory } from '../types';
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Cell, AreaChart, Area } from 'recharts';
+import { Users, HardHat, DollarSign, Activity, TrendingUp, ArrowUpRight } from 'lucide-react';
 
 interface DashboardProps {
   stats: {
@@ -13,75 +12,109 @@ interface DashboardProps {
 }
 
 const data = [
-  { name: 'Security', value: 120000 },
-  { name: 'Signage', value: 85000 },
-  { name: 'Low Voltage', value: 180000 },
-  { name: 'General', value: 45000 },
+  { name: 'Mon', value: 40000 },
+  { name: 'Tue', value: 30000 },
+  { name: 'Wed', value: 60000 },
+  { name: 'Thu', value: 45000 },
+  { name: 'Fri', value: 80000 },
+  { name: 'Sat', value: 20000 },
+  { name: 'Sun', value: 10000 },
 ];
-
-const COLORS = ['#F87171', '#FBBF24', '#22D3EE', '#94A3B8'];
 
 const Dashboard: React.FC<DashboardProps> = ({ stats }) => {
   return (
-    <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-8">
-      {/* Stat Cards */}
-      <div className="bg-slate-800 border border-slate-700 p-4 rounded-xl shadow-sm">
-        <div className="flex items-center justify-between mb-2">
-          <h3 className="text-slate-400 text-xs font-semibold uppercase">Pipeline Value</h3>
-          <DollarSign className="text-emerald-400" size={18} />
+    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+      {/* Pipeline Value Card */}
+      <div className="bg-slate-900/50 border border-slate-800 p-5 rounded-xl shadow-lg backdrop-blur-sm relative overflow-hidden group hover:border-slate-700 transition-all">
+        <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
+          <DollarSign size={48} className="text-emerald-500" />
         </div>
-        <p className="text-2xl font-bold text-white">${stats.totalValue.toLocaleString()}</p>
-        <p className="text-emerald-400 text-xs mt-1 flex items-center gap-1">
-          <span className="bg-emerald-400/10 px-1 rounded">+12%</span> vs last week
-        </p>
+        <div className="flex items-center justify-between mb-4">
+          <h3 className="text-slate-400 text-xs font-bold uppercase tracking-wider">Pipeline Value</h3>
+          <span className="bg-emerald-500/10 text-emerald-400 text-[10px] px-2 py-0.5 rounded-full border border-emerald-500/20 flex items-center gap-1">
+            <TrendingUp size={10} /> +12.5%
+          </span>
+        </div>
+        <p className="text-3xl font-bold text-white tracking-tight">${(stats.totalValue / 1000000).toFixed(1)}M</p>
+        <p className="text-slate-500 text-xs mt-1">Total estimated project value</p>
+        
+        {/* Mini Chart */}
+        <div className="h-10 mt-4 -mx-2">
+          <ResponsiveContainer width="100%" height="100%">
+            <AreaChart data={data}>
+              <defs>
+                <linearGradient id="colorValue" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="5%" stopColor="#10b981" stopOpacity={0.3}/>
+                  <stop offset="95%" stopColor="#10b981" stopOpacity={0}/>
+                </linearGradient>
+              </defs>
+              <Area type="monotone" dataKey="value" stroke="#10b981" strokeWidth={2} fillOpacity={1} fill="url(#colorValue)" />
+            </AreaChart>
+          </ResponsiveContainer>
+        </div>
       </div>
 
-      <div className="bg-slate-800 border border-slate-700 p-4 rounded-xl shadow-sm">
-        <div className="flex items-center justify-between mb-2">
-          <h3 className="text-slate-400 text-xs font-semibold uppercase">Active Leads</h3>
-          <Users className="text-blue-400" size={18} />
+      {/* Active Leads Card */}
+      <div className="bg-slate-900/50 border border-slate-800 p-5 rounded-xl shadow-lg backdrop-blur-sm relative overflow-hidden group hover:border-slate-700 transition-all">
+        <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
+          <Users size={48} className="text-blue-500" />
         </div>
-        <p className="text-2xl font-bold text-white">{stats.activeLeads}</p>
-        <p className="text-blue-400 text-xs mt-1">
-          {stats.highPriority} High Urgency
-        </p>
+        <div className="flex items-center justify-between mb-4">
+          <h3 className="text-slate-400 text-xs font-bold uppercase tracking-wider">Active Leads</h3>
+          <span className="bg-blue-500/10 text-blue-400 text-[10px] px-2 py-0.5 rounded-full border border-blue-500/20">
+            Live
+          </span>
+        </div>
+        <p className="text-3xl font-bold text-white tracking-tight">{stats.activeLeads}</p>
+        <div className="flex items-center gap-2 mt-2">
+          <span className="text-xs text-slate-400">High Priority:</span>
+          <span className="text-xs font-bold text-blue-400">{stats.highPriority}</span>
+        </div>
+        <div className="w-full bg-slate-800 h-1.5 rounded-full mt-4 overflow-hidden">
+          <div className="bg-blue-500 h-full rounded-full" style={{ width: `${(stats.highPriority / stats.activeLeads) * 100}%` }}></div>
+        </div>
       </div>
 
-       <div className="bg-slate-800 border border-slate-700 p-4 rounded-xl shadow-sm">
-        <div className="flex items-center justify-between mb-2">
-          <h3 className="text-slate-400 text-xs font-semibold uppercase">AI Confidence</h3>
-          <Activity className="text-purple-400" size={18} />
+      {/* AI Confidence Card */}
+      <div className="bg-slate-900/50 border border-slate-800 p-5 rounded-xl shadow-lg backdrop-blur-sm relative overflow-hidden group hover:border-slate-700 transition-all">
+        <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
+          <Activity size={48} className="text-purple-500" />
         </div>
-        <p className="text-2xl font-bold text-white">{stats.avgConfidence}%</p>
-        <p className="text-slate-500 text-xs mt-1">
-          Across {stats.activeLeads} processed permits
-        </p>
+        <div className="flex items-center justify-between mb-4">
+          <h3 className="text-slate-400 text-xs font-bold uppercase tracking-wider">AI Confidence</h3>
+          <span className="bg-purple-500/10 text-purple-400 text-[10px] px-2 py-0.5 rounded-full border border-purple-500/20">
+            Avg
+          </span>
+        </div>
+        <p className="text-3xl font-bold text-white tracking-tight">{stats.avgConfidence}%</p>
+        <p className="text-slate-500 text-xs mt-1">Match accuracy across leads</p>
+        
+        <div className="flex items-end gap-1 h-8 mt-4">
+          {[40, 60, 45, 70, 85, 65, 90].map((h, i) => (
+            <div key={i} className="flex-1 bg-purple-500/20 rounded-sm hover:bg-purple-500 transition-colors" style={{ height: `${h}%` }}></div>
+          ))}
+        </div>
       </div>
 
-      <div className="bg-slate-800 border border-slate-700 p-4 rounded-xl shadow-sm md:col-span-1 flex flex-col h-[220px]">
-        <div className="flex-1 w-full" style={{ minWidth: 0, minHeight: 160, maxHeight: 160, display: 'flex' }}>
-            <ResponsiveContainer width="100%" height={160} debounce={0}>
-            <BarChart data={data} margin={{ top: 5, right: 5, bottom: 5, left: 5 }}>
-                <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#334155" />
-                <XAxis dataKey="name" hide />
-                <Tooltip 
-                    contentStyle={{ backgroundColor: '#1e293b', borderColor: '#334155', color: '#f8fafc' }}
-                    itemStyle={{ color: '#f8fafc' }}
-                    cursor={{fill: '#334155', opacity: 0.4}}
-                />
-                <Bar dataKey="value" radius={[4, 4, 0, 0]}>
-                    {data.map((entry, index) => (
-                    <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
-                    ))}
-                </Bar>
-            </BarChart>
-            </ResponsiveContainer>
+      {/* Conversion Rate (Mock) */}
+      <div className="bg-slate-900/50 border border-slate-800 p-5 rounded-xl shadow-lg backdrop-blur-sm relative overflow-hidden group hover:border-slate-700 transition-all">
+        <div className="absolute top-0 right-0 p-4 opacity-10 group-hover:opacity-20 transition-opacity">
+          <ArrowUpRight size={48} className="text-amber-500" />
         </div>
-        <div className="flex justify-between text-xs text-slate-400 mt-2 px-1">
-            <span>Sec</span>
-            <span>Sign</span>
-            <span>IT</span>
-            <span>Gen</span>
+        <div className="flex items-center justify-between mb-4">
+          <h3 className="text-slate-400 text-xs font-bold uppercase tracking-wider">Conversion</h3>
+          <span className="bg-amber-500/10 text-amber-400 text-[10px] px-2 py-0.5 rounded-full border border-amber-500/20">
+            Est
+          </span>
+        </div>
+        <p className="text-3xl font-bold text-white tracking-tight">4.2%</p>
+        <p className="text-slate-500 text-xs mt-1">Lead to Opportunity rate</p>
+        
+        <div className="mt-4 flex items-center gap-2">
+          <div className="flex-1 h-2 bg-slate-800 rounded-full overflow-hidden">
+            <div className="h-full bg-amber-500 w-[42%]"></div>
+          </div>
+          <span className="text-[10px] text-amber-500 font-bold">Target: 5%</span>
         </div>
       </div>
     </div>

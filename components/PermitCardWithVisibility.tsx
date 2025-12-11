@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { getLeadVisibility } from '../services/firebaseLeads';
-import { EnrichedPermit, LeadCategory, LeadVisibility } from '../types';
-import { Calendar, DollarSign, User, Shield, Monitor, PenTool, CheckCircle, PlayCircle, Loader2, Sparkles, Lock } from 'lucide-react';
+import { EnrichedPermit, LeadVisibility } from '../types';
+import { Calendar, DollarSign, MapPin, Lock, CheckCircle, Zap, ChevronRight, Building } from 'lucide-react';
 
 interface PermitCardWithVisibilityProps {
   permit: EnrichedPermit;
@@ -35,199 +35,102 @@ export default function PermitCardWithVisibility({
 
   if (loading || !visibility) {
     return (
-      <div className="bg-slate-900 border border-slate-800 rounded-xl p-5 animate-pulse">
-        <div className="h-4 bg-slate-700 rounded w-1/3 mb-3"></div>
-        <div className="h-3 bg-slate-700 rounded w-2/3"></div>
+      <div className="bg-slate-900/50 border border-slate-800 rounded-xl p-4 animate-pulse flex gap-4">
+        <div className="w-12 h-12 bg-slate-800 rounded-lg"></div>
+        <div className="flex-1 space-y-2">
+          <div className="h-4 bg-slate-800 rounded w-1/3"></div>
+          <div className="h-3 bg-slate-800 rounded w-1/2"></div>
+        </div>
       </div>
     );
   }
 
   const isLocked = !visibility.isClaimed;
-  const showAddress = visibility.visibleFields.includes('address');
-  const showApplicant = visibility.visibleFields.includes('applicant');
-  const showValuation = visibility.visibleFields.includes('valuation');
+  const isCommercial = permit.aiAnalysis?.isCommercialTrigger;
+  const confidence = permit.aiAnalysis?.confidenceScore || 0;
 
   return (
     <div
       onClick={onSelectPermit}
-      className={`group bg-slate-900 border transition-all duration-300 rounded-xl overflow-hidden relative
-        ${permit.aiAnalysis?.isCommercialTrigger
-          ? 'border-emerald-500/30 hover:border-emerald-500/60 shadow-lg shadow-emerald-900/10'
-          : 'border-slate-800 hover:border-slate-700 hover:shadow-xl'
+      className={`group relative bg-slate-900/80 border transition-all duration-200 rounded-xl overflow-hidden hover:bg-slate-900
+        ${isCommercial
+          ? 'border-indigo-500/30 hover:border-indigo-500/60 shadow-lg shadow-indigo-900/10'
+          : 'border-slate-800 hover:border-slate-700'
         }
         ${permit.aiAnalysis ? 'cursor-pointer' : ''}
       `}
     >
-      {/* Verification Status Stripe */}
-      {permit.enrichmentData?.verified && (
-        <div className="absolute top-0 right-0 left-0 h-1 bg-gradient-to-r from-emerald-500 to-emerald-700"></div>
-      )}
+      {/* Status Bar */}
+      <div className={`absolute left-0 top-0 bottom-0 w-1 ${
+        isLocked ? 'bg-slate-700' : 'bg-emerald-500'
+      }`}></div>
 
-      {/* Lock Badge if Unclaimed */}
-      {isLocked && (
-        <div className="absolute top-3 right-3 bg-amber-600 text-white px-2 py-1 rounded flex items-center gap-1 text-xs font-bold">
-          <Lock size={12} /> LOCKED
+      <div className="p-4 pl-6 flex flex-col md:flex-row gap-4 items-start md:items-center">
+        
+        {/* Icon / Score */}
+        <div className="flex-shrink-0">
+          {isCommercial ? (
+            <div className="w-12 h-12 rounded-xl bg-indigo-500/10 border border-indigo-500/20 flex flex-col items-center justify-center text-indigo-400">
+              <span className="text-sm font-bold">{confidence}%</span>
+              <span className="text-[8px] uppercase tracking-wider">Match</span>
+            </div>
+          ) : (
+            <div className="w-12 h-12 rounded-xl bg-slate-800 border border-slate-700 flex items-center justify-center text-slate-500">
+              <Building size={20} />
+            </div>
+          )}
         </div>
-      )}
 
-      {/* Claimed Badge if Claimed */}
-      {!isLocked && (
-        <div className="absolute top-3 right-3 bg-emerald-600 text-white px-2 py-1 rounded flex items-center gap-1 text-xs font-bold">
-          <CheckCircle size={12} /> CLAIMED
-        </div>
-      )}
-
-      <div className="p-5 flex flex-col md:flex-row gap-6">
-        {/* Left: Metadata */}
-        <div className="flex-1">
-          <div className="flex items-center gap-2 mb-2">
-            <span
-              className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider
-                ${permit.permitType === 'Certificate of Occupancy'
-                  ? 'bg-purple-500/20 text-purple-400 border border-purple-500/30'
-                  : 'bg-blue-500/20 text-blue-400 border border-blue-500/30'
-                }
-              `}
-            >
+        {/* Main Info */}
+        <div className="flex-1 min-w-0">
+          <div className="flex items-center gap-2 mb-1">
+            <span className="text-[10px] font-bold uppercase tracking-wider text-slate-500 bg-slate-800 px-1.5 py-0.5 rounded">
               {permit.permitType}
             </span>
-            {permit.dataSource && (
-              <span className="text-[10px] text-slate-600 border border-slate-800 px-1 rounded bg-slate-900">
-                {permit.dataSource}
-              </span>
-            )}
-            <span className="text-slate-500 text-xs flex items-center gap-1">
-              <Calendar size={12} /> {permit.appliedDate}
-            </span>
-            <span className="text-slate-500 text-xs flex items-center gap-1">
-              • {permit.city}
+            <span className="text-[10px] text-slate-500 flex items-center gap-1">
+              <Calendar size={10} /> {permit.appliedDate}
             </span>
           </div>
-
-          <h3 className="text-lg font-bold text-white mb-1 group-hover:text-blue-400 transition-colors">
-            {permit.description.length > 80 ? permit.description.substring(0, 80) + '...' : permit.description}
+          
+          <h3 className="text-base font-semibold text-slate-200 truncate pr-8">
+            {isLocked && !visibility.visibleFields.includes('address') 
+              ? 'Address Hidden (Locked Lead)' 
+              : permit.address}
           </h3>
-
-          {/* Conditionally Show Address */}
-          {showAddress ? (
-            <p className="text-slate-400 text-sm flex items-center gap-1">
-              <span className="w-1.5 h-1.5 rounded-full bg-slate-600"></span>
-              {permit.address}
-            </p>
-          ) : (
-            <p className="text-slate-500 text-sm flex items-center gap-1 italic">
-              <Lock size={12} /> Address hidden until claimed
-            </p>
-          )}
-
-          <div className="mt-4 flex items-center gap-4 text-xs">
-            {/* Valuation */}
-            {showValuation ? (
-              <div className="flex items-center gap-1.5 text-slate-300 bg-slate-800/50 px-2 py-1 rounded">
-                <DollarSign size={12} className="text-emerald-400" />
-                {permit.valuation.toLocaleString()}
-              </div>
-            ) : (
-              <div className="flex items-center gap-1.5 text-slate-400 bg-slate-800/50 px-2 py-1 rounded">
-                <DollarSign size={12} className="text-slate-500" />
-                <span className="italic">Value hidden</span>
-              </div>
-            )}
-
-            {/* Applicant */}
-            {showApplicant ? (
-              <div className="flex items-center gap-1.5 text-slate-300 bg-slate-800/50 px-2 py-1 rounded">
-                <User size={12} className="text-blue-400" />
-                {permit.applicant}
-              </div>
-            ) : (
-              <div className="flex items-center gap-1.5 text-slate-400 bg-slate-800/50 px-2 py-1 rounded">
-                <User size={12} className="text-slate-500" />
-                <span className="italic">Name hidden</span>
-              </div>
-            )}
+          
+          <div className="flex items-center gap-4 mt-1 text-sm text-slate-400">
+            <span className="flex items-center gap-1">
+              <MapPin size={12} /> {permit.city}
+            </span>
+            <span className="flex items-center gap-1 text-emerald-400 font-medium">
+              <DollarSign size={12} /> {permit.valuation.toLocaleString()}
+            </span>
           </div>
         </div>
 
-        {/* Right: AI Intel or Action */}
-        <div className="w-full md:w-64 border-t md:border-t-0 md:border-l border-slate-800 pt-4 md:pt-0 md:pl-6 flex flex-col justify-center">
-          {permit.aiAnalysis ? (
-            <div className="space-y-3">
-              <div className="flex items-center justify-between">
-                <span className="text-xs text-slate-500 font-semibold uppercase">Confidence</span>
-                <span
-                  className={`text-lg font-bold ${
-                    permit.aiAnalysis.confidenceScore > 80
-                      ? 'text-emerald-400'
-                      : permit.aiAnalysis.confidenceScore > 50
-                        ? 'text-yellow-400'
-                        : 'text-slate-400'
-                  }`}
-                >
-                  {permit.aiAnalysis.confidenceScore}%
-                </span>
-              </div>
-
-              {/* Category Badge */}
-              <div className="flex items-center gap-2">
-                {permit.aiAnalysis.category === LeadCategory.SECURITY && (
-                  <Shield size={14} className="text-red-400" />
-                )}
-                {permit.aiAnalysis.category === LeadCategory.LOW_VOLTAGE && (
-                  <Monitor size={14} className="text-cyan-400" />
-                )}
-                {permit.aiAnalysis.category === LeadCategory.SIGNAGE && (
-                  <PenTool size={14} className="text-amber-400" />
-                )}
-                <span className="text-sm font-medium text-white">{permit.aiAnalysis.category}</span>
-              </div>
-
-              {/* Verification Badge */}
-              {permit.enrichmentData?.verified && (
-                <div className="flex items-center gap-1.5 text-[10px] text-emerald-400 bg-emerald-900/20 px-2 py-1 rounded border border-emerald-900/50 w-fit">
-                  <CheckCircle size={10} /> Verified Entity
-                </div>
-              )}
-
-              <div className="space-y-2 pt-2">
-                {isLocked && (
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      onClaimLead();
-                    }}
-                    className="w-full bg-amber-600 hover:bg-amber-700 text-white border border-amber-600 px-4 py-2 rounded-lg text-xs font-semibold transition-all flex items-center justify-center gap-2"
-                  >
-                    🔐 Claim Lead
-                  </button>
-                )}
-                <button className="w-full text-xs font-medium text-blue-400 hover:text-blue-300 flex items-center justify-center gap-1">
-                  View Analysis <PlayCircle size={12} />
-                </button>
-              </div>
-            </div>
+        {/* Actions / Status */}
+        <div className="flex items-center gap-3 w-full md:w-auto justify-end border-t md:border-t-0 border-slate-800 pt-3 md:pt-0 mt-2 md:mt-0">
+          {isLocked ? (
+            <button
+              onClick={(e) => {
+                e.stopPropagation();
+                onClaimLead();
+              }}
+              className="flex items-center gap-2 px-4 py-2 bg-amber-600/10 hover:bg-amber-600/20 text-amber-500 border border-amber-600/50 rounded-lg text-xs font-bold uppercase tracking-wider transition-all"
+            >
+              <Lock size={12} />
+              Unlock Lead
+            </button>
           ) : (
-            <div className="h-full flex flex-col items-center justify-center gap-2">
-              <button
-                onClick={(e) => {
-                  e.stopPropagation();
-                  onAnalyze();
-                }}
-                disabled={isAnalyzing}
-                className="w-full bg-slate-800 hover:bg-blue-600 hover:text-white border border-slate-700 text-slate-400 px-4 py-3 rounded-lg text-sm font-semibold transition-all flex items-center justify-center gap-2 group/btn"
-              >
-                {isAnalyzing ? (
-                  <>
-                    <Loader2 size={16} className="animate-spin" /> Analyzing...
-                  </>
-                ) : (
-                  <>
-                    <Sparkles size={16} className="text-blue-500 group-hover/btn:text-white transition-colors" /> Run AI Analysis
-                  </>
-                )}
-              </button>
+            <div className="flex items-center gap-2 px-3 py-1.5 bg-emerald-500/10 text-emerald-400 rounded-lg border border-emerald-500/20">
+              <CheckCircle size={14} />
+              <span className="text-xs font-bold">Claimed</span>
             </div>
           )}
+
+          <div className="text-slate-600">
+            <ChevronRight size={20} />
+          </div>
         </div>
       </div>
     </div>

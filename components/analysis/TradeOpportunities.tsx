@@ -9,20 +9,20 @@ interface TradeOpportunitiesProps {
 export const TradeOpportunities: React.FC<TradeOpportunitiesProps> = ({ tradeOpportunities }) => {
   return (
     <div>
-      <h3 className="text-slate-400 text-xs uppercase tracking-wider font-semibold mb-3">
-        Trade Opportunities
+      <h3 className="text-slate-400 text-xs uppercase tracking-wider font-bold mb-3">
+        Identified Opportunities
       </h3>
-      <div className="space-y-2">
+      <div className="grid gap-3">
         <TradeItem
           active={tradeOpportunities.securityIntegrator}
           icon={<Shield size={18} />}
-          label="Security & Access"
-          colorScheme="red"
+          label="Security & Access Control"
+          colorScheme="indigo"
         />
         <TradeItem
           active={tradeOpportunities.lowVoltageIT}
           icon={<Cable size={18} />}
-          label="Low Voltage / IT"
+          label="Low Voltage / IT Infrastructure"
           colorScheme="cyan"
         />
         <TradeItem
@@ -40,38 +40,41 @@ interface TradeItemProps {
   active: boolean;
   icon: React.ReactNode;
   label: string;
-  colorScheme: 'red' | 'cyan' | 'amber';
+  colorScheme: 'indigo' | 'cyan' | 'amber';
 }
 
 const TradeItem: React.FC<TradeItemProps> = ({ active, icon, label, colorScheme }) => {
   const colors = {
-    red: {
-      container: active ? 'bg-red-900/10 border-red-900/50' : 'bg-slate-800/50 border-slate-700 opacity-50',
-      icon: active ? 'bg-red-500/20 text-red-400' : 'bg-slate-700 text-slate-500',
+    indigo: {
+      container: active ? 'bg-indigo-500/10 border-indigo-500/30' : 'bg-slate-900/30 border-slate-800 opacity-40',
+      icon: active ? 'bg-indigo-500/20 text-indigo-400' : 'bg-slate-800 text-slate-600',
+      text: active ? 'text-indigo-100' : 'text-slate-500',
     },
     cyan: {
-      container: active ? 'bg-cyan-900/10 border-cyan-900/50' : 'bg-slate-800/50 border-slate-700 opacity-50',
-      icon: active ? 'bg-cyan-500/20 text-cyan-400' : 'bg-slate-700 text-slate-500',
+      container: active ? 'bg-cyan-500/10 border-cyan-500/30' : 'bg-slate-900/30 border-slate-800 opacity-40',
+      icon: active ? 'bg-cyan-500/20 text-cyan-400' : 'bg-slate-800 text-slate-600',
+      text: active ? 'text-cyan-100' : 'text-slate-500',
     },
     amber: {
-      container: active ? 'bg-amber-900/10 border-amber-900/50' : 'bg-slate-800/50 border-slate-700 opacity-50',
-      icon: active ? 'bg-amber-500/20 text-amber-400' : 'bg-slate-700 text-slate-500',
+      container: active ? 'bg-amber-500/10 border-amber-500/30' : 'bg-slate-900/30 border-slate-800 opacity-40',
+      icon: active ? 'bg-amber-500/20 text-amber-400' : 'bg-slate-800 text-slate-600',
+      text: active ? 'text-amber-100' : 'text-slate-500',
     },
   };
 
   const theme = colors[colorScheme];
 
   return (
-    <div className={`flex items-center justify-between p-3 rounded-lg border ${theme.container}`}>
-      <div className="flex items-center gap-2">
-        <div className={`p-1.5 rounded ${theme.icon}`}>
+    <div className={`flex items-center justify-between p-4 rounded-xl border transition-all ${theme.container}`}>
+      <div className="flex items-center gap-3">
+        <div className={`p-2 rounded-lg ${theme.icon}`}>
           {icon}
         </div>
-        <span className={active ? 'text-white font-medium' : 'text-slate-500'}>
+        <span className={`font-medium text-sm ${theme.text}`}>
           {label}
         </span>
       </div>
-      {active && <CheckCircle size={16} className="text-emerald-400" />}
+      {active && <CheckCircle size={18} className="text-emerald-500" />}
     </div>
   );
 };

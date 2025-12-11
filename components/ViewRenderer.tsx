@@ -1,5 +1,5 @@
 import React from 'react';
-import { Search, AlertTriangle } from 'lucide-react';
+import { Search, AlertTriangle, Loader2 } from 'lucide-react';
 import { ErrorBoundary } from './ErrorBoundary';
 import PermitMap from './PermitMap';
 import PermitCardWithVisibility from './PermitCardWithVisibility';
@@ -16,10 +16,6 @@ interface ViewRendererProps {
   onClaimLead: (permit: EnrichedPermit) => void;
 }
 
-/**
- * Renders the appropriate view (list/map/analytics) based on viewMode
- * Handles empty states and error boundaries
- */
 export const ViewRenderer: React.FC<ViewRendererProps> = ({
   viewMode,
   permits,
@@ -34,15 +30,13 @@ export const ViewRenderer: React.FC<ViewRendererProps> = ({
 
   if (viewMode === 'map') {
     return (
-      <div className="relative z-0">
+      <div className="relative z-0 h-[600px] rounded-xl overflow-hidden border border-slate-800 shadow-2xl">
         <ErrorBoundary
           fallback={
-            <div className="text-center py-20 bg-slate-900/50 rounded-xl border border-slate-800 border-dashed">
-              <AlertTriangle className="mx-auto text-red-400 mb-4" size={48} />
-              <h3 className="text-lg font-medium text-slate-300">Map Unavailable</h3>
-              <p className="text-slate-500">
-                The map encountered an error. Try the list view instead.
-              </p>
+            <div className="flex flex-col items-center justify-center h-full bg-slate-900 text-slate-400">
+              <AlertTriangle className="mb-4 text-amber-500" size={48} />
+              <h3 className="text-lg font-medium text-white">Map Unavailable</h3>
+              <p className="text-sm">The map component encountered an error.</p>
             </div>
           }
         >
@@ -52,9 +46,8 @@ export const ViewRenderer: React.FC<ViewRendererProps> = ({
               if (p.aiAnalysis) {
                 onSelectPermit(p);
               } else {
-                alert(
-                  'Select a lead to run AI analysis or click the card to view details.'
-                );
+                // Optional: Trigger analysis if not present
+                alert('Select a lead to view details.');
               }
             }}
           />
@@ -65,13 +58,15 @@ export const ViewRenderer: React.FC<ViewRendererProps> = ({
 
   // List view (default)
   return (
-    <div className="space-y-4">
+    <div className="space-y-3">
       {permits.length === 0 ? (
-        <div className="text-center py-20 bg-slate-900/50 rounded-xl border border-slate-800 border-dashed">
-          <Search className="mx-auto text-slate-600 mb-4" size={48} />
-          <h3 className="text-lg font-medium text-slate-300">No leads found</h3>
-          <p className="text-slate-500">
-            Try adjusting your filters or city selection.
+        <div className="flex flex-col items-center justify-center py-24 bg-slate-900/30 rounded-xl border border-slate-800 border-dashed">
+          <div className="bg-slate-800 p-4 rounded-full mb-4">
+            <Search className="text-slate-500" size={32} />
+          </div>
+          <h3 className="text-lg font-medium text-white">No leads found</h3>
+          <p className="text-slate-500 max-w-xs text-center mt-2">
+            Try adjusting your city filters or run a new scan to find permits.
           </p>
         </div>
       ) : (

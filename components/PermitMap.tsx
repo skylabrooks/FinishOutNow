@@ -1,9 +1,10 @@
 import React, { useEffect, useMemo } from 'react';
-import { MapContainer, TileLayer, Marker, Popup, CircleMarker, useMap } from 'react-leaflet';
+import { MapContainer, TileLayer, Marker, Popup, useMap } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import type { EnrichedPermit } from '../types';
 import { geocodingService, Coordinates } from '../services/geocoding/GeocodingService';
+import { Building, Calendar, DollarSign } from 'lucide-react';
 
 // Fix default icon path for Vite builds
 delete (L.Icon.Default as any).prototype._getIconUrl;
@@ -36,20 +37,6 @@ function FitBounds({ points }: { points: Coordinates[] }) {
 
   return null;
 }
-
-// Basic color mapping for categories
-const categoryColor = (category?: string) => {
-  switch (category) {
-    case 'Security & Access Control':
-      return '#ef4444'; // red
-    case 'IT & Low Voltage':
-      return '#06b6d4'; // cyan
-    case 'Signage & Branding':
-      return '#f59e0b'; // amber
-    default:
-      return '#60a5fa'; // blue
-  }
-};
 
 export default function PermitMap({ permits, onSelect }: Props) {
   // Extract addresses that need geocoding
@@ -92,35 +79,64 @@ export default function PermitMap({ permits, onSelect }: Props) {
   const markerPoints = points.filter(pt => !!pt.latlng);
 
   return (
-    <div className="h-[600px] rounded-xl overflow-hidden border border-slate-800 relative z-0">
-      <MapContainer key={`map-${markerPoints.length}`} center={DEFAULT_CENTER} zoom={10} style={{ height: '100%', width: '100%' }}>
+    <div className="h-[600px] rounded-xl overflow-hidden border border-slate-800 relative z-0 shadow-2xl">
+      <MapContainer key={`map-${markerPoints.length}`} center={DEFAULT_CENTER} zoom={10} style={{ height: '100%', width: '100%', background: '#020617' }}>
         <TileLayer
-          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
-          url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+          attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>'
+          url="https://{s}.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}{r}.png"
         />
-
+        <FitBounds points={markerPoints.map(p => p.latlng)} />
         {markerPoints.map(({ permit, latlng }) => (
-          <CircleMarker
-            key={permit.id}
-            center={latlng}
-            radius={8}
-            pathOptions={{ color: categoryColor(permit.aiAnalysis?.category), fillColor: categoryColor(permit.aiAnalysis?.category), fillOpacity: 0.9, weight: 1 }}
+          <Marker 
+            key={permit.id} 
+            position={latlng}
             eventHandlers={{
-              click: () => onSelect && onSelect(permit)
+              click: () => onSelect?.(permit),
             }}
           >
-            <Popup>
-              <div className="text-sm">
-                <div className="font-bold mb-1">{permit.description}</div>
-                <div className="text-xs text-slate-600">{permit.address}</div>
-                <div className="mt-1 text-xs">{permit.city} • {permit.appliedDate}</div>
+            <Popup className="custom-popup">
+              <div className="p-1 min-w-[200px]">
+                <div className="flex items-start justify-between mb-2">
+                    <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider ${
+                        permit.permitType === 'Commercial' 
+                        ? 'bg-indigo-500/20 text-indigo-300 border border-indigo-500/30' 
+                        : 'bg-slate-700 text-slate-300 border border-slate-600'
+                    }`}>
+                        {permit.permitType}
+                    </span>
+                    <span className="text-emerald-400 font-bold text-xs">
+                        ${(permit.valuation || 0).toLocaleString()}
+                    </span>
+                </div>
+                <h3 className="font-bold text-slate-900 text-sm mb-1 line-clamp-2">{permit.projectDescription}</h3>
+                <p className="text-xs text-slate-500 mb-2">{permit.address}</p>
+                
+                <button 
+                    onClick={() => onSelect?.(permit)}
+                    className="w-full mt-2 bg-indigo-600 hover:bg-indigo-700 text-white text-xs font-bold py-1.5 rounded transition-colors"
+                >
+                    View Details
+                </button>
               </div>
             </Popup>
-          </CircleMarker>
+          </Marker>
         ))}
-
-        <FitBounds points={markerPoints.map(m => m.latlng)} />
       </MapContainer>
+      <style>{`
+        .leaflet-popup-content-wrapper {
+          background: #ffffff;
+          border-radius: 0.75rem;
+          box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+          padding: 0;
+          overflow: hidden;
+        }
+        .leaflet-popup-content {
+          margin: 0.75rem;
+        }
+        .leaflet-popup-tip {
+          background: #ffffff;
+        }
+      `}</style>
     </div>
   );
 }
