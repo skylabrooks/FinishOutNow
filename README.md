@@ -42,12 +42,14 @@ Advanced lead intelligence platform for commercial construction contractors, pow
 
 ## 📖 Documentation
 
-**Start with:** [`docs/README.md`](./docs/README.md)
+**🚀 Quick Start:** [`docs/GETTING_STARTED.md`](./docs/GETTING_STARTED.md) — All roles start here
 
-Quick navigation by role:
-- **Developers:** `docs/02_Architecture_and_Overview/` → `docs/features/`
-- **Managers:** `docs/implementation/` → `docs/testing/`
-- **DevOps:** `docs/deployment/` → `docs/operations/`
+**Full docs:** [`docs/README.md`](./docs/README.md)
+
+**Quick navigation by role:**
+- **Developers:** Setup → Architecture → Features → API docs
+- **Managers:** Business case → Status → Test results
+- **DevOps:** Setup → Deployment → Operations
 
 ---
 

@@ -1,11 +1,11 @@
-# E BOOKGOV
+# Early Book
 ## The Only Logical Solution to Contractor Lead Generation
 ### *AI-Driven, Human-Powered, Mildly Over-Involved*
 
 ---
 
 # Slide 1 — Title
-# **E BookGov**
+# **Early Book**
 ### "We Handle Everything. You Handle… Something, Probably."
 
 A fully integrated TI contractor sales engine for the Dallas–Fort Worth market.
@@ -41,7 +41,7 @@ This is the entire story of modern construction sales.
 ---
 
 # Slide 4 — Our Solution (Delivered Without Blinking)
-# **E BookGov Appointment Setting Service**
+# **Early Book Appointment Setting Service**
 
 We:
 - Identify high-value Tenant Improvement leads  
@@ -101,7 +101,7 @@ We support all of these activities.
 - Cold calling yourself and regretting everything  
 - Hoping the lead calls you back due to destiny or vibes  
 
-### E BookGov:
+### Early Book:
 The only platform that confidently handles 95% of your sales process and politely hands you the last 5%.
 
 ---
@@ -113,7 +113,7 @@ Studies suggest:
 - Appointment setting increases ROI by 3–10x  
 - Contractors are happiest when someone else does the follow-up  
 
-E BookGov aligns with all four findings.
+Early Book aligns with all four findings.
 
 ---
 
@@ -185,7 +185,7 @@ We are building that world.
 ---
 
 # Slide 14 — Closing
-# **E BookGov**
+# **Early Book**
 ### “We do everything except the part you get paid for.”
 
 Thank you for your time.  

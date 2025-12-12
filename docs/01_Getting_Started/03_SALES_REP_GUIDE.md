@@ -1,4 +1,4 @@
-# FinishOutNow Sales Rep Guide
+# Early BookS Sales Rep Guide
 ## Your Step-by-Step Playbook for Closing Deals
 
 ---
@@ -17,12 +17,12 @@
 
 ## 🎯 What You're Selling
 
-### **In One Sentence:**
-> "FinishOutNow helps contractors find and claim high-value commercial permits BEFORE their competitors do."
+### **In One Sentence:**] 
+> "Early BookS helps contractors find and claim high-value commercial permits BEFORE their competitors do."
 
 ### **The 30-Second Elevator Pitch:**
 
-*"Hi [Name], I'm with FinishOutNow. We help [Security/Signage/IT] contractors in Dallas-Fort Worth find commercial permits the day they're filed—often days or weeks before brokers even know about them. Our AI scores each permit by how likely it is to need your services, and because we have a 'first-come, first-served' claiming system, your team can lock in leads fast. Are you currently looking at ways to find more commercial leads?"*
+*"Hi [Name], I'm with Early BookS. We help [Security/Signage/IT] contractors in Dallas-Fort Worth find commercial permits the day they're filed—often days or weeks before brokers even know about them. Our AI scores each permit by how likely it is to need your services, and because we have a 'first-come, first-served' claiming system, your team can lock in leads fast. Are you currently looking at ways to find more commercial leads?"*
 
 ---
 
@@ -69,7 +69,7 @@ Ask these questions:
 ---
 
 ### **Step 3: The Solution (Show the Product)**
-*"Here's what FinishOutNow does: Every day, we pull new commercial permits from Dallas, Fort Worth, Plano, Arlington, and Irving. Our AI instantly scores each one for YOUR trade. It tells you:*
+*"Here's what Early BookS does: Every day, we pull new commercial permits from Dallas, Fort Worth, Plano, Arlington, and Irving. Our AI instantly scores each one for YOUR trade. It tells you:*
 - *Is this a real commercial opportunity? (confidence %)*
 - *What trade work is likely needed?*
 - *How much is the project worth?*
@@ -169,7 +169,7 @@ AppContent	@	App.tsx:498
 **What They're Really Asking:** Will this create more work for my team?
 
 **Your Answer:**
-*"Actually, it saves time. Here's what our customers tell us: Instead of spending 2 hours researching leads on city websites, they spend 20 minutes on FinishOutNow. The AI already did the research. They just need to decide 'Do I want this lead or not?' and claim it. That's it."*
+*"Actually, it saves time. Here's what our customers tell us: Instead of spending 2 hours researching leads on city websites, they spend 20 minutes on Early BookS. The AI already did the research. They just need to decide 'Do I want this lead or not?' and claim it. That's it."*
 
 **If They Say:** "But we'd have to train our team"
 **Counter:** *"5-minute setup. Seriously. I'll do it on a Zoom call or phone. Your team can start using it immediately. We also have 24/7 chat support if they get stuck."*
@@ -181,7 +181,7 @@ AppContent	@	App.tsx:498
 **What They're Really Asking:** Is there a catch?
 
 **Your Answer:**
-*"The only 'catch' is that you have to actually reach out to the leads. FinishOutNow finds them, verifies them, and scores them. But closing is up to you. That said, because you're reaching out first, your odds are way better than if you waited weeks. Plus, 2-week trial. If it's not working, you know after 2 weeks. No commitment."*
+*"The only 'catch' is that you have to actually reach out to the leads. Early BookS finds them, verifies them, and scores them. But closing is up to you. That said, because you're reaching out first, your odds are way better than if you waited weeks. Plus, 2-week trial. If it's not working, you know after 2 weeks. No commitment."*
 
 ---
 
@@ -235,11 +235,11 @@ AppContent	@	App.tsx:498
 
 ### **Template #1: After Demo (Send Same Day)**
 
-**Subject:** Your FinishOutNow 2-Week Trial (Free)
+**Subject:** Your Early BookS 2-Week Trial (Free)
 
 Hi [Name],
 
-Great talking with you today! As promised, I've set up your free 2-week trial to FinishOutNow.
+Great talking with you today! As promised, I've set up your free 2-week trial to Early BookS.
 
 **Your login:** [email] / [temp password]
 
@@ -255,7 +255,7 @@ I'll follow up on [DATE] to see how it's going. If you have questions before the
 
 Best,
 [Your Name]
-FinishOutNow Sales Team
+Early BookS Sales Team
 
 ---
 
@@ -301,7 +301,7 @@ Best,
 
 ### **Template #4: The Ask (End of Trial)**
 
-**Subject:** Let's keep FinishOutNow going
+**Subject:** Let's keep Early BookS going
 
 Hi [Name],
 
@@ -345,7 +345,7 @@ Then ask your manager or check the internal pricing guide.
 ### **What to Say When They Ask Price:**
 
 **If they seem hesitant:**
-*"I know it's an investment. But think about this: If you close just ONE deal from FinishOutNow this year, it pays for itself 10x over. Most of our customers close 3-5 deals per year from these leads. So really, it's not a cost—it's an investment in your pipeline."*
+*"I know it's an investment. But think about this: If you close just ONE deal from Early BookS this year, it pays for itself 10x over. Most of our customers close 3-5 deals per year from these leads. So really, it's not a cost—it's an investment in your pipeline."*
 
 **If they want a discount:**
 *"Great question. Let me see what I can do. Can you commit to 3 months? I might be able to get you a [X% off] offer."*
@@ -423,10 +423,10 @@ Then ask your manager or check the internal pricing guide.
 ## 🎓 Pro Tips for Novices
 
 ### **Tip #1: Believe in the Product**
-If you don't think this is valuable, they won't either. Genuinely believe FinishOutNow saves contractors time and money. It shows.
+If you don't think this is valuable, they won't either. Genuinely believe Early BookS saves contractors time and money. It shows.
 
 ### **Tip #2: Ask More Questions**
-Don't talk the whole time. Ask about THEIR business first. Then explain how FinishOutNow helps THEM.
+Don't talk the whole time. Ask about THEIR business first. Then explain how Early BookS helps THEM.
 
 ### **Tip #3: Use the Trial**
 You don't have to close on a sale. Close on a trial. Trials convert way easier. Get them in, they'll see the value.

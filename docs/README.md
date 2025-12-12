@@ -9,41 +9,69 @@ Complete documentation for FinishOutNow, organized by functional area. This is y
 
 ---
 
-## 📁 Documentation Structure
+## 📁 Documentation Structure (Consolidated & Simplified)
 
 ```
 docs/
 ├── README.md                              ← You are here
-├── architecture/                          ← System design & data pipeline
-│   ├── 01_data_sources_and_ingestion.md  (Data sources, normalization)
-│   ├── 02_creative_signals_pipeline.md   (Early-stage lead detection)
-│   ├── 03_ai_features_predictive_geo_network.md (AI/ML features)
-│   └── 04_lead_quality_filtering.md      (Quality rules & scoring)
-├── features/                              ← AI & predictive features
-│   ├── AI_FEATURES_QUICKSTART.md         (Quick reference & examples)
-│   ├── AI_FEATURES_IMPLEMENTATION_SUMMARY.md (Full feature list)
-│   └── CREATIVE_SIGNALS_IMPLEMENTATION.md (Signal connectors)
-├── implementation/                        ← Project completion & status
-│   ├── SIGNAL_CONNECTORS_PRODUCTION.md   (Production connectors)
-│   ├── PRIORITY_ACTIONS_COMPLETE.md      (Completed tasks)
+├── GETTING_STARTED.md                     ← ⭐ START HERE for all roles
+│
+├── 01_Getting_Started/                    ← Quick guides by role
+│   ├── 02_BUSINESS_CASE.md               (Value proposition)
+│   ├── 03_SALES_REP_GUIDE.md             (Sales playbook)
+│   └── 04_AI_AGENT_IMPLEMENTATION.md     (AI agent setup)
+│
+├── 02_Architecture_and_Overview/          ← High-level overview
+│   ├── 01_DEVELOPER_HANDOFF.md           (Project architecture)
+│   └── 02_PROJECT_COMPLETION.md          (Feature status)
+│
+├── architecture/                          ← Technical deep-dives
+│   ├── 01_data_sources_and_ingestion.md  (Data pipeline)
+│   ├── 02_creative_signals_pipeline.md   (Signal detection)
+│   ├── 03_ai_features_predictive_geo_network.md (AI/ML)
+│   └── 04_lead_quality_filtering.md      (Quality scoring)
+│
+├── features/                              ← Feature implementation
+│   ├── AI_ARCHITECTURE.md                (AI system design)
+│   ├── AI_QUICK_REFERENCE.md             (Quick AI guide)
+│   ├── AI_FEATURES_QUICKSTART.md         (Code examples)
+│   ├── AI_FEATURES_IMPLEMENTATION_SUMMARY.md (Full inventory)
+│   ├── CREATIVE_SIGNALS_IMPLEMENTATION.md (Signal connectors)
+│   └── APPOINTMENT_SETTING_FEATURE.md    (Appointment booking)
+│
+├── setup/                                 ← Installation & config
+│   ├── 01_BACKEND_SETUP.md               (Backend/API setup)
+│   ├── 02_BACKEND_QUICK_REFERENCE.md     (Command reference)
+│   ├── 03_API_SETUP.md                   (API credentials)
+│   ├── 04_FIREBASE_SETUP_GUIDE.md        (Firebase config)
+│   └── 05_MCP_INSTRUCTIONS.md            (MCP server setup)
+│
+├── 04_Lead_Management/                    ← Lead workflows
+│   └── 01_LEAD_CLAIMING_FEATURE.md       (Claiming system)
+│
+├── implementation/                        ← Completed work
+│   ├── SIGNAL_CONNECTORS_PRODUCTION.md   (Production status)
+│   ├── PRIORITY_ACTIONS_COMPLETE.md      (Task completion)
 │   └── QUALITY_FILTER_TESTS_COMPLETE.md  (Test coverage)
-├── changelog/                             ← Version history
-│   └── (changelog entries)
+│
 ├── testing/                               ← QA & testing
 │   ├── README.md
-│   ├── testing/ (other test docs)
-├── deployment/                            ← Release & operations
+│   ├── PRODUCTION_READINESS_REPORT.md    (Test results)
+│   ├── PRODUCTION_READINESS_CHECKLIST.md (Deploy checklist)
+│   ├── E2E_TEST_REPORT.md                (E2E results)
+│   └── COMPLETE_E2E_TESTING_SUMMARY.md   (Full test report)
+│
+├── deployment/                            ← Production deployment
 │   ├── README.md
-│   └── (deployment docs)
-├── operations/                            ← Monitoring & health
-│   ├── README.md
-│   └── (operational docs)
-├── 01_Getting_Started/                    ← Setup & initialization
-├── 02_Architecture_and_Overview/          ← High-level overview
-├── 03_Setup_and_Configuration/            ← Installation & config
-├── 04_Lead_Management/                    ← Lead pipeline
-├── 05_Production_and_Deployment/          ← Production docs
-└── 06_AI_Features/                        ← AI feature docs
+│   ├── PRODUCTION_READY.md               (Production guide)
+│   ├── PRODUCTION_DEPLOYMENT_GUIDE.md    (Deploy steps)
+│   └── PRODUCTION_RELEASE_SUMMARY.md     (Release notes)
+│
+├── operations/                            ← Day-to-day ops
+│   └── API_Implementation_todo.md        (API tasks)
+│
+├── changelog/                             ← Version history
+└── AI_RESEARCH/                           ← Research notes
 ```
 
 ---
@@ -54,17 +82,18 @@ docs/
 
 **Goal:** Understand the codebase and make changes
 
-1. **Start Here:**
-   - `02_Architecture_and_Overview/` — System overview
-   - `architecture/03_ai_features_predictive_geo_network.md` — AI architecture
+**⭐ Start:** [`GETTING_STARTED.md`](./GETTING_STARTED.md) — Complete quickstart guide
 
-2. **Then Read:**
-   - `features/AI_FEATURES_QUICKSTART.md` — Import and use patterns
-   - `architecture/01_data_sources_and_ingestion.md` — Data pipeline
+**Then Read:**
+1. `02_Architecture_and_Overview/01_DEVELOPER_HANDOFF.md` — System overview
+2. `architecture/03_ai_features_predictive_geo_network.md` — AI architecture
+3. `features/AI_FEATURES_QUICKSTART.md` — Code examples
+4. `architecture/01_data_sources_and_ingestion.md` — Data pipeline
 
-3. **Reference:**
-   - `04_Lead_Management/` — Lead lifecycle
-   - `03_Setup_and_Configuration/` — Local dev setup
+**Reference:**
+- `setup/` — Local development setup
+- `04_Lead_Management/` — Lead lifecycle
+- `features/` — Feature documentation
 
 **Time:** ~30 minutes
 
@@ -74,16 +103,17 @@ docs/
 
 **Goal:** Understand what's built and project status
 
-1. **Start Here:**
-   - `implementation/PRIORITY_ACTIONS_COMPLETE.md` — Completed work
-   - `implementation/QUALITY_FILTER_TESTS_COMPLETE.md` — Test status
+**⭐ Start:** [`GETTING_STARTED.md`](./GETTING_STARTED.md) — See "Sales/Managers" section
 
-2. **Then Read:**
-   - `features/AI_FEATURES_IMPLEMENTATION_SUMMARY.md` — Feature inventory
-   - `testing/PRODUCTION_READINESS_CHECKLIST.md` — Deployment ready?
+**Then Read:**
+1. `01_Getting_Started/02_BUSINESS_CASE.md` — Value proposition
+2. `02_Architecture_and_Overview/02_PROJECT_COMPLETION.md` — Feature status
+3. `implementation/PRIORITY_ACTIONS_COMPLETE.md` — Completed work
+4. `testing/PRODUCTION_READINESS_REPORT.md` — Test results
 
-3. **Reference:**
-   - `deployment/PRODUCTION_RELEASE_SUMMARY.md` — Timeline
+**Reference:**
+- `deployment/PRODUCTION_RELEASE_SUMMARY.md` — Release timeline
+- `features/AI_FEATURES_IMPLEMENTATION_SUMMARY.md` — Full feature list
 
 **Time:** ~20 minutes
 
@@ -93,11 +123,33 @@ docs/
 
 **Goal:** Deploy and monitor the application
 
-1. **Start Here:**
-   - `deployment/README.md` — Deployment guide
-   - `operations/README.md` — Monitoring & health
+**⭐ Start:** [`GETTING_STARTED.md`](./GETTING_STARTED.md) — See "DevOps" section
 
-2. **Then Read:**
+**Then Read:**
+1. `deployment/PRODUCTION_DEPLOYMENT_GUIDE.md` — Deploy to production
+2. `setup/01_BACKEND_SETUP.md` — Backend configuration
+3. `testing/PRODUCTION_READINESS_CHECKLIST.md` — Pre-deploy checklist
+
+**Reference:**
+- `deployment/README.md` — Deployment overview
+- `operations/` — Operational docs
+
+**Time:** ~30 minutes
+
+---
+
+## 🚀 Quick Links
+
+**Most Common Tasks:**
+- 🆕 **New to project?** → [`GETTING_STARTED.md`](./GETTING_STARTED.md)
+- 🔧 **Setup development?** → [`setup/02_BACKEND_QUICK_REFERENCE.md`](./setup/02_BACKEND_QUICK_REFERENCE.md)
+- 🤖 **Use AI features?** → [`features/AI_FEATURES_QUICKSTART.md`](./features/AI_FEATURES_QUICKSTART.md)
+- 🚀 **Deploy to production?** → [`deployment/PRODUCTION_DEPLOYMENT_GUIDE.md`](./deployment/PRODUCTION_DEPLOYMENT_GUIDE.md)
+- ✅ **Check test status?** → [`testing/PRODUCTION_READINESS_REPORT.md`](./testing/PRODUCTION_READINESS_REPORT.md)
+
+---
+
+## 2. **Then Read:**
    - `05_Production_and_Deployment/` — Production docs
    - `testing/PRODUCTION_READINESS_CHECKLIST.md` — Pre-deployment
 
