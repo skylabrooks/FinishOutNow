@@ -1,7 +1,7 @@
 // Scoring manager: applies quality filters and computes lead scores
-import { Permit, EnrichedPermit } from '../types';
+import { Permit, EnrichedPermit } from '../../types';
 import { applyQualityFilters, evaluateHighQuality } from './qualityFilter';
-import { computeLeadScore } from '../utils/leadScoring';
+import { computeLeadScore } from '../../utils/utils/leadScoring';
 
 export function applyFiltersAndScore(permits: Permit[]): EnrichedPermit[] {
   const enriched = permits.map(p => ({ ...p, leadScore: computeLeadScore(p) }));

@@ -3,8 +3,8 @@
  *
  * Scores permits 0-100 using valuation, AI confidence, recency, and enrichment validity.
  */
-import { EnrichedPermit } from '../types';
-import { RECENCY_THRESHOLD_DAYS } from '../services/qualityFilter';
+import { EnrichedPermit } from '../../types';
+import { RECENCY_THRESHOLD_DAYS } from '../../services/services/qualityFilter';
 
 const clamp = (val: number, min: number, max: number) => Math.max(min, Math.min(max, val));
 

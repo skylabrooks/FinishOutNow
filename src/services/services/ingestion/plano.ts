@@ -45,6 +45,7 @@ let discoveryResults: Array<{endpoint: string; success: boolean; errorType?: str
  * Fetch Plano permits - Discovery phase implementation
  * Per EnerGov architecture: Test public endpoints first, then request OAuth if needed
  */
+export async function fetchPlanoPermits(): Promise<Permit[]> {
   Logger.info('[Plano] 🔍 Starting endpoint discovery...');
   discoveryResults = []; // Reset results
   
